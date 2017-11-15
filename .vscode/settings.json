@@ -1,0 +1,10 @@
+{
+	"[json]": {
+		"editor.quickSuggestions": {
+			"strings": true
+		},
+		"editor.formatOnSave": true
+	},
+
+	"eslint.autoFixOnSave": true
+}
