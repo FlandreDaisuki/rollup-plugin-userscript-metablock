@@ -41,7 +41,7 @@ export default {
 };
 ```
 
-```json
+```javascript
 // metablock.json
 {
   // If name / description use key-value form, default is required or throw an error
