@@ -26,104 +26,145 @@ export default {
     format: 'es'
   },
   plugins: [metablock({
-    // file : string | null(default)
-    file: 'metablock.json',
+    // Metablock file path
+    file: 'my-metablock.json', // Default: 'metablock.json'
 
-    // order: string[]
-    // default: ['name', 'description', 'namespace', '...', 'grant']
-    // ignore unknown metakey or multiple '...'
-    order: ['name', 'description', 'namespace', '...', 'grant'],
+    // Change order from file
+    // * 'name' can include 'name:lang'
+    // * 'description' can include 'description:lang'
+    // * '...' as a special key means others
+    // * ignore unknown or duplicate key
+    order: ['...'], // Default: ['name', 'description', 'namespace', '...', 'grant']
 
-    // version override: string | null(default)
-    // override file `version` metakey
-    version: null
+    // Override file 'version' key, from file if null
+    version: require('./package.json').version, // Default: null
+
+    // Auto extend monkey api if 'grant' key set implicit
+    // * 'tampermonkey': 'setValue' -> 'GM_setValue'
+    // * 'greasemonkey4': 'setValue' -> 'GM.setValue'
+    // * 'both': 'setValue' -> 'GM_setValue' & 'GM.setValue'
+    monkey: 'both', // Default: 'tampermonkey'
+
+    // Validators can throw error to lint your metablock file
+    // * you can set false or null to validators to disable all
+    validators: {
+      // you should have "namespace" in file
+      "namespace-require": true, // Default: true
+
+      // you should have "include" or "match" in file
+      "include-require": true, // Default: true
+
+      // you should have corresponding "name" and "description" in file
+      "name-description": true, // Default: true
+
+      // check valid url-pattern for "match"
+      "valid-url-pattern": true,  // Default: true
+    },
   })]
 };
 ```
 
+## Metablock file
+### General
+|key|validator|type|note|
+|:-:|:--:|:--:|:--:|
+|name|name-description|String|**This key is required**|
+|└||{default: String,<br/>[lang]: String}|default is required if Object|
+|description|name-description|String||
+|└||{default: String,<br/>[lang]: String}|default is required if Object|
+|namespace||String||
+|version||String|Recommend: [Mozilla toolkit format](https://developer.mozilla.org/docs/Toolkit_version_format)|
+|include|include-require|url String with wildcard||
+|├||regexp String|Detail: [Include and exclude rules](https://wiki.greasespot.net/Include_and_exclude_rules)<br/>String because it's not familar js Regex and Regex string form |
+|└||Array of above||
+|exclude||url String with wildcard||
+|├||regexp String||
+|└||Array of above||
+|match|include-require|match pattern|Detail: [match patterns](https://developer.chrome.com/extensions/match_patterns)|
+|icon||resource url String|
+|require||resource url String|
+|└||Array of above||
+|resource||{[resource name]: resource url String}|Trinary meta form
+|run-at||"document-start" /<br/>"document-idle" /<br/>"document-end" /<br/>"document-body" /<br/>"context-menu"|only tempermonkey support last 2
+|noframes||Boolean|Unary meta form|
+|grant||explicit API String|with `GM_` or `GM.`|
+|├||implicit API String|without `GM_` or `GM.`|
+|└||Array of above||
+
+### Greasy Fork Support
+|key|validator|type|note|
+|:-:|:--:|:--:|:--:|
+|license||String||
+|supportURL||url String||
+|compatible||{[browser]: String}|Greasy Fork only support<br/>`firefox`, `chrome`, `opera`, `safari`|
+|incompatible||{[browser]: String}|Greasy Fork only support<br/>`firefox`, `chrome`, `opera`, `safari`|
+
+### Misc
+
+1. If no grant, use `@grant none` explicitly
+   - Greasemonkey treat no set as `@grant none`. [Ref](https://wiki.greasespot.net/@grant)
+   - Tampermonkey treat no set as grant you use but some need declare explicitly. [Ref](https://tampermonkey.net/documentation.php#_grant)
+   - Both can use info (`GM_info` / `GM.info`) without grant
+   - **Idea:** Maybe add a todo that inspect code to auto generate grant
+2. If no include or match and set validator: `include-require` to false
+   - Greasemonkey treat no set to `@include *`. [Ref](https://wiki.greasespot.net/Include_and_exclude_rules)
+   - Tampermonkey treat no set to match nothing. (I've test in tampermonkey 4.5.5619 on Firefox and Chrome)
+3. If no namespace and set validator: `namespace-require` to false
+   - Because name + namespace is a script id, it will overwrite your script if both name is the same and both namespace no set.
+   - **Idea:** Maybe auto generate this script name as the namespace if no set.
+
+### Simplest Example
+
 ```javascript
 // metablock.json
 {
-  // If name / description use key-value form, default is required or throw an error
-
-  // name : string | { default: string , [lang: string]: string}
   "name": "Hello World",
+  "description": "Say Hello",
+  "namespace": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock",
+  "include":"*"
+}
+```
 
-  // description : string | { default: string , [lang: string]: string}
+### Complicated Example
+
+```javascript
+// metablock.json
+{
+  "name": "Hello World",
   "description": {
     "default": "The example metablock",
     "en": "The example metablock",
     "zh-TW": "範例程式"
   },
-
-  // namespace : string
   "namespace": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock",
-
-  // version : string
-  // Recommend: https://developer.mozilla.org/docs/Toolkit_version_format
   "version": "1.0.0",
-
-  // include : string | string[]
-  // exclude : string | string[]
-  // If no include/match is provided and manager set 'compatible', set '@include *' explicitly
   "include": "*://*.example.com/*",
   "exclude": [
     "*://*.example*/api*",
     "*://*.example*/user*"
   ],
-
-  // match : url-pattern | url-pattern[]
-  // Match Pattern: https://developer.chrome.com/extensions/match_patterns
-  // If match has any invalid url-pattern, throw an error
   "match": "https://*.example.net/*",
-
-  // icon : string
   "icon": "https://static.example.net/favicon.ico",
-
-  // require : string | string[]
   "require": ["https://static.example.net/jquery.min.js"],
-
-  // resource, compatible, ... other trinary metakey : { [name : string] : string }
   "resource": {
     "css": "https://static.example.net/main.css",
     "banner": "https://static.example.net/banner.png"
   },
-
-  // run-at: 'document-start' | 'document-idle' | 'document-end' | 'context-menu'
-  // default: 'document-end'
   "run-at": "document-start",
-
-  // noframes, ... other unary metakey: boolean
   "noframes": true,
-
-  // grant: null | string | string[]
-  // if no set or set null, generate `@grant none` explicitly
   "grant": [
-    "GM_setValue",
-    "GM_getValue"
+    "setValue",
+    "getValue",
+    "GM_download"
   ],
 
-  // GreasyFork support metakeys
-  // https://greasyfork.org/help/meta-keys
-
-  // license : string
   "license": "MIT",
-
-  // supportURL : string
   "supportURL": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock",
-
-  // compatible : {['firefox' | 'chrome' | 'opera' | 'safari']: string}
-  // incompatible : {['firefox' | 'chrome' | 'opera' | 'safari']: string}
   "compatible": {
     "firefox": ">=57",
   }
 }
 ```
-
-## Todo
-
-- [ ] validate version string
-- [ ] validate url
 
 ## License
 
