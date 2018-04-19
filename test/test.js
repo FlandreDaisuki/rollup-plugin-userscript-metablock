@@ -2,6 +2,7 @@ import metablock from '../';
 import {rollup} from 'rollup';
 import assert from 'assert';
 import {readFileSync} from 'fs';
+import path from 'path';
 
 process.chdir(__dirname);
 
@@ -23,6 +24,15 @@ describe('rollup-plugin-userscript-metablock', () => {
 		it('@grant none', () => codePromise
 			.then(grantNone));
 	});
+
+	it('metablock file not exists', () => {
+		assert.throws(() => {
+			rollup({
+				input: 'main.js',
+				plugins:[metablock({file: '$NON_EXISTENT$.json'})],
+			});
+		}, /Metablock file not found/);
+	})
 
 	describe('blank.txt (invalid json)', () => {
 		it('JSON.parse throw SyntaxError', () => {
@@ -78,6 +88,18 @@ describe('rollup-plugin-userscript-metablock', () => {
 		}).then(generateCode);
 
 		codePromise.then(console.log);
+
+		it('@name required', () => codePromise
+			.then(nameRequired));
+		it('@grant explictly', () => codePromise
+			.then(grantExplictly));
+	});
+
+	describe('basic (basic.js)', () => {
+		const codePromise = rollup({
+			input: 'main.js',
+			plugins:[metablock({file: path.join(__dirname, 'basic.js')})],
+		}).then(generateCode);
 
 		it('@name required', () => codePromise
 			.then(nameRequired));

@@ -1,4 +1,5 @@
-import {readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
+import {extname} from 'path';
 
 function isEmptyArray(arr) {
 	return Array.isArray(arr) && arr.length === 0;
@@ -62,7 +63,20 @@ export default function(options = {}) {
 	};
 
 	if (opt.file) {
-		const json = JSON.parse(readFileSync(opt.file, 'utf8'));
+		if (!existsSync(opt.file)) {
+			throw new Error(`Metablock file not found: ${opt.file}`);
+		}
+
+		let json;
+		switch (extname(opt.file)) {
+		case '.json':
+			json = JSON.parse(readFileSync(opt.file, 'utf8'));
+			break;
+		case '.js':
+			json = require(opt.file);
+			break;
+		}
+
 		Object.assign(meta, json);
 	}
 
