@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Transform json file to userscript metablock and append on",
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
   "scripts": {
@@ -19,11 +19,11 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "mocha": "^4.0.1",
-    "rollup": "^0.51.3",
-    "rollup-plugin-babel": "^3.0.2"
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "mocha": "^4.1.0",
+    "rollup": "^0.51.8",
+    "rollup-plugin-babel": "^3.0.7"
   },
   "babel": {
     "presets": [
@@ -34,6 +34,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {}
+  }
 }
