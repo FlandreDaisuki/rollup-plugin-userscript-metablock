@@ -14,7 +14,7 @@ describe('rollup-plugin-userscript-metablock', () => {
 	describe('minimal', () => {
 		const codePromise = rollup({
 			input: 'main.js',
-			plugins:[metablock()],
+			plugins: [metablock()]
 		}).then(generateCode);
 
 		it('@name required', () => codePromise
@@ -29,10 +29,10 @@ describe('rollup-plugin-userscript-metablock', () => {
 		assert.throws(() => {
 			rollup({
 				input: 'main.js',
-				plugins:[metablock({file: '$NON_EXISTENT$.json'})],
+				plugins: [metablock({file: '$NON_EXISTENT$.json'})]
 			});
 		}, /Metablock file not found/);
-	})
+	});
 
 	describe('blank.txt (invalid json)', () => {
 		it('JSON.parse throw SyntaxError', () => {
@@ -45,7 +45,7 @@ describe('rollup-plugin-userscript-metablock', () => {
 	describe('empty.json', () => {
 		const codePromise = rollup({
 			input: 'main.js',
-			plugins:[metablock({file: 'empty.json'})],
+			plugins: [metablock({file: 'empty.json'})]
 		}).then(generateCode);
 
 		it('@name required', () => codePromise
@@ -59,7 +59,7 @@ describe('rollup-plugin-userscript-metablock', () => {
 	describe('invalid name type (name1.json)', () => {
 		const codePromise = rollup({
 			input: 'main.js',
-			plugins:[metablock({file: 'name1.json'})],
+			plugins: [metablock({file: 'name1.json'})]
 		}).then(generateCode);
 
 		it('@name required', () => codePromise
@@ -75,7 +75,7 @@ describe('rollup-plugin-userscript-metablock', () => {
 			assert.throws(() => {
 				rollup({
 					input: 'main.js',
-					plugins:[metablock({file: 'name2.json'})],
+					plugins: [metablock({file: 'name2.json'})]
 				});
 			}, Error);
 		});
@@ -84,7 +84,7 @@ describe('rollup-plugin-userscript-metablock', () => {
 	describe('basic (basic.json)', () => {
 		const codePromise = rollup({
 			input: 'main.js',
-			plugins:[metablock({file: 'basic.json'})],
+			plugins: [metablock({file: 'basic.json'})]
 		}).then(generateCode);
 
 		codePromise.then(console.log);
@@ -98,13 +98,27 @@ describe('rollup-plugin-userscript-metablock', () => {
 	describe('basic (basic.js)', () => {
 		const codePromise = rollup({
 			input: 'main.js',
-			plugins:[metablock({file: path.join(__dirname, 'basic.js')})],
+			plugins: [metablock({file: path.join(__dirname, 'basic.js')})]
 		}).then(generateCode);
 
 		it('@name required', () => codePromise
 			.then(nameRequired));
 		it('@grant explictly', () => codePromise
 			.then(grantExplictly));
+	});
+
+	describe('pass meta object directly', () => {
+		const codePromise = rollup({
+			input: 'main.js',
+			plugins: [metablock({meta: {name: 'Test', grant: 'none'}})]
+		}).then(generateCode);
+
+		it('@name required', () => codePromise
+			.then(nameRequired));
+		it('@grant explictly', () => codePromise
+			.then(grantExplictly));
+		it('@grant none', () => codePromise
+			.then(grantNone));
 	});
 
 	function grantExplictly(code) {
