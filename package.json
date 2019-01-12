@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Transform json file to userscript metablock and append on",
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
   "scripts": {
