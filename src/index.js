@@ -51,6 +51,7 @@ function processMetaValue(value) {
 export default function(options = {}) {
 	const opt = Object.assign({
 		file: null,
+		meta: null,
 		// script manager : 'tampermonkey' | 'greasemonkey3' | 'greasemonkey4' | 'compatible'(default)
 		manager: 'compatible',
 		order: ['name', 'description', 'namespace', '...', 'grant'],
@@ -78,6 +79,10 @@ export default function(options = {}) {
 		}
 
 		Object.assign(meta, json);
+	}
+
+	if(opt.meta){
+		Object.assign(meta, opt.meta);
 	}
 
 	if (opt.version) {

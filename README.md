@@ -29,6 +29,9 @@ export default {
     // file : string | null(default)
     file: 'metablock.json',
 
+    // You can also use `meta` to pass it directly rather taht provide a file, and it has higher priority that `file`.
+    meta: {},
+
     // order: string[]
     // default: ['name', 'description', 'namespace', '...', 'grant']
     // ignore unknown metakey or multiple '...'
