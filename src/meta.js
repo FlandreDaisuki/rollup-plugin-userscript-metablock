@@ -153,7 +153,7 @@ const _binary_globuris = (keyname) => (val, vtor) => {
 };
 
 const _binary_enum = (keyname, enumset) => (val, vtor) => {
-  if (val !== undefined) {
+  if (val === undefined) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be undefined`);
     return null;
   }
@@ -212,6 +212,7 @@ const _binary_grant = (val, vtor, sm) => {
     return null;
   }
 };
+
 const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
 const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
