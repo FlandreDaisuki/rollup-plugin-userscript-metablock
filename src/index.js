@@ -47,9 +47,9 @@ const transformAll = (conf) => {
 
 const renderAll = (entries) => {
   const counter = {
-    name:0,
-    desc:0,
-    other:0,
+    name: 0,
+    desc: 0,
+    other: 0,
   };
 
   for (const entry of entries) {

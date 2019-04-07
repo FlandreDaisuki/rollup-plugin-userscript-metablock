@@ -266,7 +266,7 @@ export const BASIC_METAKEY_FUNCS = {
       return null;
     }
   },
-  noframes:(val, vtor) => {
+  noframes: (val, vtor) => {
     const keyname = 'noframes';
     if (!val) {
       _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);

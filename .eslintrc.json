@@ -45,6 +45,7 @@
     ],
     "semi": "error",
     "space-infix-ops": "error",
-    "no-console": "off"
+    "no-console": "off",
+    "key-spacing": "error"
   }
 }
