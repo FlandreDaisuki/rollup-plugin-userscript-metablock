@@ -2,3 +2,6 @@ examples/
 test/
 src/
 rollup.config.js
+.*
+docs/
+*.tgz

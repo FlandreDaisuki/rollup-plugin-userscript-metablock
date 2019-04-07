@@ -2,12 +2,49 @@
   "env": {
     "es6": true,
     "node": true,
+    "mocha": true,
     "browser": true,
     "greasemonkey": true
   },
-  "extends": "standard",
+  "extends": "eslint:recommended",
   "parserOptions": {
     "sourceType": "module",
-    "ecmaVersion": 8
+    "ecmaVersion": 9
+  },
+  "rules": {
+    "array-bracket-newline": [
+      "error",
+      "consistent"
+    ],
+    "arrow-spacing": "error",
+    "brace-style": [
+      "error",
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "comma-dangle": [
+      "error",
+      "always-multiline"
+    ],
+    "comma-spacing": "error",
+    "indent": [
+      "error",
+      2
+    ],
+    "keyword-spacing": "error",
+    "no-multi-spaces": "error",
+    "object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": "error",
+    "space-infix-ops": "error",
+    "no-console": "off"
   }
 }

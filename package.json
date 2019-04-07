@@ -1,11 +1,13 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.1.0",
-  "description": "Transform json file to userscript metablock and append on",
+  "version": "0.2.0",
+  "description": "Transform config file to userscript metablock and append on",
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
+  "module": "dist/rollup-plugin-userscript-metablock.esm.js",
   "scripts": {
-    "test": "npm run build && cd test && babel --presets env -o compiled.js test.js && mocha compiled.js",
-    "build": "rollup -c"
+    "test": "mocha --require esm --recursive",
+    "build": "rollup -c",
+    "publish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,24 +20,16 @@
   "author": "FlandreDaisuki <vbnm123c@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "eslint": "^4.12.0",
-    "eslint-config-standard": "^10.2.1",
-    "mocha": "^4.0.1",
-    "rollup": "^0.51.3",
-    "rollup-plugin-babel": "^3.0.2"
+    "eslint": "^5.16.0",
+    "esm": "^3.2.22",
+    "mocha": "^6.0.2",
+    "rollup": "^1.9.0"
   },
-  "babel": {
-    "presets": [
-      [
-        "env",
-        {
-          "modules": false
-        }
-      ]
-    ]
-  },
-  "dependencies": {}
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "debug": "^4.1.1",
+    "js-yaml": "^3.13.1",
+    "semver": "^6.0.0",
+    "valid-url": "^1.0.9"
+  }
 }

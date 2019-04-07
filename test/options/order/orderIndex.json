@@ -1,0 +1,13 @@
+[
+  {
+    "order": ["name", "description", "namespace", "...", "grant"],
+    "orderIndex": {
+      "...": 0,
+      "namespace": -1,
+      "description": -2,
+      "name": -3,
+      "grant": 1,
+      "version": 0
+    }
+  }
+]
