@@ -1,4 +1,4 @@
-import { throws, deepEqual, strictEqual } from 'assert';
+import { throws, deepStrictEqual, strictEqual } from 'assert';
 import { loadFile, SIMPLEST_META, getValidOrder, getSpecialIndexWithOrder, sortbyOrder } from '../../src/options';
 import { FileNotFound, UnsupportedFormat } from '../../src/errors';
 import { YAMLException } from 'js-yaml';
@@ -13,11 +13,13 @@ describe('options:file', () => {
       'http://*',
       'https://*',
     ],
+    grant: 'none',
+    namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
   };
 
   it('null/empty', () => {
-    deepEqual(loadFile(null), SIMPLEST_META);
-    deepEqual(loadFile(''), SIMPLEST_META);
+    deepStrictEqual(loadFile(null), SIMPLEST_META);
+    deepStrictEqual(loadFile(''), SIMPLEST_META);
   });
 
   it('not exists', () => {
@@ -29,18 +31,18 @@ describe('options:file', () => {
   });
 
   it('json', () => {
-    deepEqual(ref, loadFile(`${__dirname}/file/goods/meta.json`));
+    deepStrictEqual(ref, loadFile(`${__dirname}/file/goods/meta.json`));
     throws(() => loadFile(`${__dirname}/file/bads/meta.json`));
   });
 
   it('js', () => {
-    deepEqual(ref, loadFile(`${__dirname}/file/goods/meta.js`));
-    deepEqual(ref, loadFile(`${__dirname}/file/goods/meta.esm.js`));
+    deepStrictEqual(ref, loadFile(`${__dirname}/file/goods/meta.js`));
+    deepStrictEqual(ref, loadFile(`${__dirname}/file/goods/meta.esm.js`));
     throws(() => loadFile(`${__dirname}/file/bads/meta.js`), Error);
   });
 
   it('yml', () => {
-    deepEqual(ref, loadFile(`${__dirname}/file/goods/meta.yml`));
+    deepStrictEqual(ref, loadFile(`${__dirname}/file/goods/meta.yml`));
     throws(() => loadFile(`${__dirname}/file/bads/meta.yml`), YAMLException);
   });
 });
@@ -49,7 +51,7 @@ describe('options:order', () => {
   const before = ['name', '...', 'not-metakeys', '...', 'grant', 'name:zh-TW'];
   const after = ['name', '...', 'grant'];
   it('getValidOrder()', () => {
-    deepEqual(after, getValidOrder(before));
+    deepStrictEqual(after, getValidOrder(before));
   });
 
   const orderIndexList = require(`${__dirname}/order/orderIndex.json`);
@@ -70,7 +72,7 @@ describe('options:order', () => {
 
     it(`sort by order #${index}`, () => {
       const sorted = sortbyOrder(test.before, test.order);
-      deepEqual(sorted, test.after);
+      deepStrictEqual(sorted, test.after);
     });
   }
 

@@ -5,7 +5,7 @@
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
   "module": "dist/rollup-plugin-userscript-metablock.esm.js",
   "scripts": {
-    "test": "mocha --require esm --recursive",
+    "test": "export NODE_ENV=test; mocha --require esm --recursive",
     "build": "rollup -c",
     "publish": "npm run build"
   },

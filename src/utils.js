@@ -10,6 +10,9 @@ export const isIPv4 = (s) => {
   }
   return false;
 };
+const noop = () => {};
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 export const print = {
-  warn: console.warn.bind(console, chalk.yellow('⚠')),
+  warn: !isTestEnv ? console.warn.bind(console, chalk.yellow('⚠')) : noop,
 };
