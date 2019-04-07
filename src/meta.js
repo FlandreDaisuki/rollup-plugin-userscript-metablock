@@ -12,15 +12,19 @@ export const DEFAULT_METAS = {
 export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
   const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
 
-  if (!keynames.includes(metakey)) {
-    if (validator === 'warn') { p.warn(`The script manager doesn't support metakey: ${metakey}`); }
+  const [mk, mv] = [metakey.trim(), isString(metavalue) ? metavalue.trim() : metavalue];
+
+  if (!keynames.includes(mk)) {
+    if (validator === 'warn') { p.warn(`The script manager doesn't support metakey: ${mk}`); }
     if (validator === 'error') {
-      throw new UnknownMetakeyToScriptManager(`The script manager doesn't support metakey: ${metakey}`);
+      throw new UnknownMetakeyToScriptManager(`The script manager doesn't support metakey: ${mk}`);
     }
     return null;
   }
 
-  return keyfuncs[metakey](metavalue, validator, manager) || [[metakey, DEFAULT_METAS[metakey]]];
+  const result = keyfuncs[mk](mv, validator, manager);
+  const defmeta = DEFAULT_METAS[mk];
+  return defmeta ? result || [[mk, defmeta]] : result;
 };
 
 const _validator_tmpl = (vtor, msg) => {
