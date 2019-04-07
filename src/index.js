@@ -51,6 +51,7 @@ const renderAll = (entries) => {
     desc:0,
     other:0,
   };
+
   for (const entry of entries) {
     const first = entry[0];
     if (/^name(:.*)?$/.test(first)) {
@@ -60,6 +61,23 @@ const renderAll = (entries) => {
     } else {
       counter.other = Math.max(counter.other, first.length);
     }
+  }
+
+  const _name = counter.name === 'name'.length;
+  const _desc = counter.desc === 'description'.length;
+  if (_name && _desc) {
+    counter.name
+    = counter.desc
+    = counter.other
+    = Math.max(counter.name, counter.desc, counter.other);
+  } else if (_name) {
+    counter.name
+    = counter.other
+    = Math.max(counter.name, counter.other);
+  } else if (_desc) {
+    counter.desc
+    = counter.other
+    = Math.max(counter.desc, counter.other);
   }
 
   const lines = [];
