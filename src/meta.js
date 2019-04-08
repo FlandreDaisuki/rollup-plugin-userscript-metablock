@@ -1,7 +1,7 @@
 import { isUri } from 'valid-url';
 import semver from 'semver';
 import { UnknownMetakeyToScriptManager, InvalidMetaValue } from './errors';
-import { isString, isObject, isMatchPattern, print as p, isIPv4 } from './utils';
+import { isString, isObject, isMatchPattern, print as p, isIPv4, isGlobURI } from './utils';
 
 export const DEFAULT_METAS = {
   name: 'New Script',
@@ -127,7 +127,7 @@ const _binary_globuri = (keyname) => (val, vtor) => {
   }
 
   if (isString(val)) {
-    if (val.includes('*') || (/^\/.*\/$/).test(val)) {
+    if (isGlobURI(val)) {
       return [[keyname, val]];
     } else {
       return _binary_uri(keyname)(val, vtor);
