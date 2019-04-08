@@ -32,7 +32,7 @@ const _validator_tmpl = (vtor, msg) => {
   if (vtor === 'error') { throw new InvalidMetaValue(msg); }
 };
 
-const _multilingual = (keyname) => (val, vtor) => {
+export const _multilingual = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -53,7 +53,7 @@ const _multilingual = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_string = (keyname) => (val, vtor) => {
+export const _binary_string = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -67,7 +67,7 @@ const _binary_string = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_strings = (keyname) => (val, vtor) => {
+export const _binary_strings = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -85,7 +85,7 @@ const _binary_strings = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_uri = (keyname) => (val, vtor) => {
+export const _binary_uri = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -102,7 +102,7 @@ const _binary_uri = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_uris = (keyname) => (val, vtor) => {
+export const _binary_uris = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -120,7 +120,7 @@ const _binary_uris = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_globuri = (keyname) => (val, vtor) => {
+export const _binary_globuri = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -138,7 +138,7 @@ const _binary_globuri = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_globuris = (keyname) => (val, vtor) => {
+export const _binary_globuris = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -156,7 +156,7 @@ const _binary_globuris = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_enum = (keyname, enumset) => (val, vtor) => {
+export const _binary_enum = (keyname, enumset) => (val, vtor) => {
   if (val === undefined) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be undefined`);
     return null;
@@ -174,7 +174,55 @@ const _binary_enum = (keyname, enumset) => (val, vtor) => {
   }
 };
 
-const _binary_matches = (keyname) => (val, vtor) => {
+export const _ternary_uri = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+
+  if (isObject(val)) {
+    const entries = Object.entries(val);
+    for (const [rname, uri] of entries) {
+      if (!isUri(String(uri))) {
+        _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
+      }
+    }
+    return entries.map(entry => [keyname, ...entry.map(String)]);
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
+    return null;
+  }
+};
+
+export const _binary_version = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+
+  if (semver.valid(val)) {
+    return [[keyname, semver.clean(val)]];
+  }
+
+  const coerce = semver.coerce(val);
+  if (semver.valid(coerce)) {
+    _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
+    return [[keyname, coerce.version]];
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s matavalue is invalid`);
+    return null;
+  }
+};
+
+export const _unary = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+  return val ? [[keyname]] : null;
+};
+
+export const _binary_matches = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
@@ -201,7 +249,7 @@ const _binary_matches = (keyname) => (val, vtor) => {
   }
 };
 
-const _binary_grant = (val, vtor, sm) => {
+export const _binary_grant = (val, vtor, sm) => {
   const keyname = 'grant';
   if (!val) {
     return [[keyname, 'none']];
@@ -217,8 +265,8 @@ const _binary_grant = (val, vtor, sm) => {
   }
 };
 
-const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
-const INJECTINTO_ENUM = ['page', 'content', 'auto'];
+export const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
+export const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
 export const BASIC_METAKEY_FUNCS = {
   name: _multilingual('name'),
@@ -230,54 +278,9 @@ export const BASIC_METAKEY_FUNCS = {
   icon: _binary_uri('icon'),
   require: _binary_uris('require'),
   'run-at': _binary_enum('run-at', RUNAT_ENUM),
-  resource: (val, vtor) => {
-    const keyname = 'resource';
-    if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
-      return null;
-    }
-
-    if (isObject(val)) {
-      const entries = Object.entries(val);
-      for (const [rname, uri] of entries) {
-        if (!isUri(uri)) {
-          _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
-        }
-      }
-      return entries.map(entry => [keyname, ...entry]);
-    } else {
-      _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
-      return null;
-    }
-  },
-  version: (val, vtor) => {
-    const keyname = 'version';
-    if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
-      return null;
-    }
-
-    if (semver.valid(val)) {
-      return [[keyname, semver.clean(val)]];
-    }
-
-    const coerce = semver.coerce(val);
-    if (semver.valid(coerce)) {
-      _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
-      return [[keyname, coerce.version]];
-    } else {
-      _validator_tmpl(vtor, `${keyname}'s matavalue is invalid`);
-      return null;
-    }
-  },
-  noframes: (val, vtor) => {
-    const keyname = 'noframes';
-    if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
-      return null;
-    }
-    return val ? [[keyname]] : null;
-  },
+  resource: _ternary_uri('resource'),
+  version: _binary_version('version'),
+  noframes: _unary('noframes'),
   grant: _binary_grant,
 };
 export const BASIC_METAKEY_NAMES = Object.keys(BASIC_METAKEY_FUNCS);
