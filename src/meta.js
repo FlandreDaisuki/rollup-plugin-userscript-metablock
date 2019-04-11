@@ -2,6 +2,7 @@ import { isUri } from 'valid-url';
 import semver from 'semver';
 import { UnknownMetakeyToScriptManager, InvalidMetaValue } from './errors';
 import { isString, isObject, isMatchPattern, print as p, isIPv4, isGlobURI } from './utils';
+import debug from 'debug';
 
 export const DEFAULT_METAS = {
   name: 'New Script',
@@ -10,10 +11,12 @@ export const DEFAULT_METAS = {
 };
 
 export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
+  debug('meta:getMetaEntry::[metakey, metavalue]')([metakey, metavalue]);
   const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
 
   const mk = metakey.trim();
-  let mv;
+
+  let mv = metavalue;
   if (isString(metavalue)) {
     mv = metavalue.trim();
   } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
@@ -475,4 +478,3 @@ export const getMetakeyDataByManager = (manager) => {
     };
   }
 };
-
