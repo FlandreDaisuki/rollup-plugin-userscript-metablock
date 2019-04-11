@@ -1,0 +1,9 @@
+// ==UserScript==
+// @name      My First Userscript
+// @description       This is my first userscript
+// @description:zh-TW 這是我的第一個腳本
+// @namespace npmjs.com/rollup-plugin-userscript-metablock
+// @version   1.0.0
+// @grant     GM_getValue
+// @grant     GM_setValue
+// ==/UserScript==

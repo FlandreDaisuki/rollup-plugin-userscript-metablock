@@ -1,0 +1,6 @@
+{
+  "file": "./metablock.yml",
+  "override": {
+    "name": "我的第一個腳本"
+  }
+}
