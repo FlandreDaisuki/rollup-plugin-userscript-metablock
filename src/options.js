@@ -20,7 +20,7 @@ export const DEFAULT_ORDER = [
 export const loadFile = (filename = './metablock.json') => {
   const p = debug('options:loadFile');
   const keys = {};
-  // p('cwd', process.cwd());
+  p('cwd', process.cwd());
 
   if (!filename) {
     Object.assign(keys, SIMPLEST_META);
@@ -35,7 +35,8 @@ export const loadFile = (filename = './metablock.json') => {
     }
 
     case '.js': {
-      const loaded = require(filename);
+      pathInfo.dir = process.cwd();
+      const loaded = require(path.format(pathInfo));
       if (loaded.default) {
         Object.assign(keys, SIMPLEST_META, loaded.default);
       } else if (Object.keys(loaded).length) {
