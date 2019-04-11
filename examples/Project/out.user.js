@@ -1,20 +1,21 @@
 // ==UserScript==
-// @name              Project
-// @namespace         https://www.example.com/
+// @name      Project
 // @description       bbb
 // @description:en    ccc
 // @description:zh-TW ddd
-// @version           1.0
-// @include           *
-// @grant             none
+// @namespace https://www.example.com/
+// @version   5.4.3
+// @include   /^https?//example[.]com/.*$/
+// @include   http://*
+// @grant     none
 // ==/UserScript==
 
 function print(...args) {
-	console.log(...args);
+  console.log(...args);
 }
 
 function padleft(s, n, d = ' ') {
-	return s.padStart(n, d);
+  return s.padStart(n, d);
 }
 
 print(padleft('5', 3, '0'));

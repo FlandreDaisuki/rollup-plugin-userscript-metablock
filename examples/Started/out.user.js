@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name      Hello, world
 // @namespace https://www.example.com/
-// @version   1.0
+// @version   1.0.0
 // @include   *://*.example.*
 // @match     *://*/*
 // @match     https://*.abc.com/*

@@ -1,0 +1,10 @@
+name: Project
+description:
+  default: bbb
+  en: ccc
+  zh-TW: ddd
+namespace: https://www.example.com/
+version: '1.0'
+include:
+  - /^https?//example[.]com/.*$/
+  - 'http://*'
