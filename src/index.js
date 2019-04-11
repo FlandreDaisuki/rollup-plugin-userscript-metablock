@@ -109,6 +109,8 @@ export default function metablock(options = {}) {
   debug('plugin:top::final')(final);
 
   return {
-    intro: final,
+    renderChunk(code) {
+      return (final + '\n\n' + code).replace(/\n+$/g, '\n');
+    },
   };
 }
