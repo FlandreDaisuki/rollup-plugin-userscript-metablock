@@ -76,9 +76,10 @@ export const _binary_strings = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_string(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_string(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
     return null;
@@ -111,9 +112,10 @@ export const _binary_uris = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_uri(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_uri(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
     return null;
@@ -147,9 +149,10 @@ export const _binary_globuris = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_globuri(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_globuri(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be globuri string or globuri string[] type`);
     return null;
@@ -234,7 +237,7 @@ export const _binary_matches = (keyname) => (val, vtor) => {
     }
     return [[keyname, val]];
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       if (isString(curr)) {
         if (!isMatchPattern(curr)) {
           _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid match pattern string`);
@@ -243,12 +246,14 @@ export const _binary_matches = (keyname) => (val, vtor) => {
       }
       return prev;
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be match pattern string or match pattern string[] type`);
     return null;
   }
 };
 
+/* eslint-disable-next-line no-unused-vars */
 export const _binary_grant = (val, vtor, sm) => {
   const keyname = 'grant';
   if (!val) {
@@ -340,12 +345,16 @@ export const TM_METAKEY_FUNCS = {
       }
       return [[keyname, val]];
     } else if (Array.isArray(val) && val.length && val.every(isString)) {
-      for (const v of val) {
-        if (!isValidConnect(v)) {
-          _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+      const goods = val.reduce((prev, curr) => {
+        if (isString(curr)) {
+          if (!isValidConnect(curr)) {
+            _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+          }
+          return prev.concat([[keyname, curr]]);
         }
-      }
-      return val.map(v => [keyname, v]);
+        return prev;
+      }, []).filter(Boolean);
+      return goods.length ? goods : null;
     } else {
       _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
       return null;
