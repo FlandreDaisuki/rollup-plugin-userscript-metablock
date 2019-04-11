@@ -12,7 +12,25 @@ export const DEFAULT_METAS = {
 export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
   const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
 
-  const [mk, mv] = [metakey.trim(), isString(metavalue) ? metavalue.trim() : metavalue];
+  const mk = metakey.trim();
+  let mv;
+  if (isString(metavalue)) {
+    mv = metavalue.trim();
+  } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
+    mv = metavalue.map(v => v.trim());
+  } else if (isObject(metavalue)) {
+    mv = Object.entries(metavalue)
+      .map(([k, v]) => {
+        if (isString(v)) {
+          return [k, v.trim()];
+        }
+        return [k, v];
+      })
+      .reduce((prev, [k, v]) => {
+        prev[k] = v;
+        return prev;
+      }, {});
+  }
 
   if (!keynames.includes(mk)) {
     if (validator === 'warn') { p.warn(`The script manager doesn't support metakey: ${mk}`); }
@@ -93,7 +111,7 @@ export const _binary_uri = (keyname) => (val, vtor) => {
   }
 
   if (isString(val)) {
-    if (!isUri(val) && vtor !== 'off') {
+    if (!isUri(val)) {
       _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid URI`);
     }
     return [[keyname, val]];
