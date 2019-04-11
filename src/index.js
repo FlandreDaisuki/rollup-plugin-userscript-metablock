@@ -1,4 +1,4 @@
-import { loadFile, getScriptManager, getValidator, getValidOrder, DEFAULT_ORDER, sortbyOrder } from './options';
+import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } from './options';
 import { isValidMetakeyName, getMetaEntry } from './meta';
 import debug from 'debug';
 import { jclone, isObject } from './utils';
@@ -28,7 +28,8 @@ const parseOptions = (options) => {
   }, {});
 
   // order metakeys
-  const order = getValidOrder((options.order || []).concat(DEFAULT_ORDER));
+  const order = getValidOrder(options.order);
+  debug('plugin:parseOptions::order')(order);
   conf.metakeys = sortbyOrder(conf.metakeys, order);
 
   return conf;

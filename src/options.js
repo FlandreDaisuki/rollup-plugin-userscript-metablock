@@ -108,8 +108,17 @@ export const getValidator = (vtor) => {
   }
 };
 
-export const getValidOrder = (order) => {
-  const orderSet = new Set(order);
+export const getValidOrder = (order = []) => {
+  const _order = jclone(order);
+
+  const i = _order.indexOf('...');
+  if (i >= 0) {
+    _order.splice(i, 1, ...DEFAULT_ORDER);
+  } else {
+    _order.push(...DEFAULT_ORDER);
+  }
+
+  const orderSet = new Set(_order);
   const cloned = [...orderSet];
   for (const key of cloned) {
     if (key !== '...' && !isValidMetakeyName(key)) {
