@@ -1,0 +1,25 @@
+[
+  {
+    "order": ["name", "description", "...", "grant"],
+    "before": {
+      "description": {
+        "default": "bb",
+        "en": "cc"
+      },
+      "name": "aa",
+      "version": "1.0",
+      "grant": "none",
+      "noframes": true
+    },
+    "after": {
+      "name": "aa",
+      "description": {
+        "default": "bb",
+        "en": "cc"
+      },
+      "version": "1.0",
+      "noframes": true,
+      "grant": "none"
+    }
+  }
+]

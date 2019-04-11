@@ -1,0 +1,5 @@
+// ==UserScript==
+// @name      My First Userscript
+// @namespace npmjs.com/rollup-plugin-userscript-metablock
+// @grant     none
+// ==/UserScript==

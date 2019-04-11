@@ -1,0 +1,9 @@
+{
+  "file": "./metablock.yml",
+  "order": [
+    "version",
+    "...",
+    "grant",
+    "..."
+  ]
+}

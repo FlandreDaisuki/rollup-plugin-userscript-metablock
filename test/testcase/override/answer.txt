@@ -1,0 +1,5 @@
+// ==UserScript==
+// @name      我的第一個腳本
+// @namespace npmjs.com/rollup-plugin-userscript-metablock
+// @grant     none
+// ==/UserScript==

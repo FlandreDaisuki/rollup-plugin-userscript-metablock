@@ -3,3 +3,6 @@ test/
 src/
 rollup.config.js
 .*
+docs/
+*.tgz
+npm-scripts/

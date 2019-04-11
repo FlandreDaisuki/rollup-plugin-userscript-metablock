@@ -1,188 +1,114 @@
-import {existsSync, readFileSync} from 'fs';
-import {extname} from 'path';
+import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } from './options';
+import { isValidMetakeyName, getMetaEntry } from './meta';
+import debug from 'debug';
+import { jclone, isObject } from './utils';
 
-function isEmptyArray(arr) {
-	return Array.isArray(arr) && arr.length === 0;
-}
+const parseOptions = (options) => {
+  debug('plugin:parseOptions::raw options')(options);
 
-function isValid(metaValue) {
-	return metaValue &&
-		!isEmptyArray(metaValue) &&
-		!isEmptyArray(Object.keys(metaValue));
-}
+  const conf = {
+    metakeys: loadFile(options.file),
+    manager: getScriptManager(options.manager),
+    validator: getValidator(options.validator),
+  };
 
-function validateMatchPattern(urlPattern) {
-	// eslint-disable-next-line no-useless-escape
-	const pattern = /(\*|https?|file|ftp):\/\/(\*|\*\.[^\/\*]*|[^\/\*]*)\/(.*)/;
+  // options.override
+  const override = jclone(isObject(options.override) ? options.override : '{}');
 
-	return pattern.test(urlPattern);
-}
+  if (override) {
+    Object.assign(conf.metakeys, override);
+  }
 
-function toMetaBlockString(key, value, padOffset = 0) {
-	if (value) {
-		return `// @${key.padEnd(padOffset)} ${value}`.trim();
-	} else {
-		return `// @${key}`;
-	}
-}
+  // remove invalid keys
+  conf.metakeys = Object.keys(conf.metakeys).reduce((collect, key) => {
+    if (isValidMetakeyName(key)) {
+      collect[key] = conf.metakeys[key];
+    }
+    return collect;
+  }, {});
 
-function processMetaValue(value) {
-	if (typeof value === 'object') {
-		if (Array.isArray(value)) {
-			return value.reduce((acc, val) => acc.concat(val), []);
-		} else {
-			// key-value Object
-			return Object.entries(value).reduce((acc, val) => {
-				acc.push(val.join(' '));
-				return acc;
-			}, []);
-		}
-	} else if (typeof value === 'string') {
-		return [value];
-	} else if (value) {
-		// not falsy
-		return [''];
-	} else {
-		// unknown
-		return [];
-	}
-}
+  // order metakeys
+  const order = getValidOrder(options.order);
+  debug('plugin:parseOptions::order')(order);
+  conf.metakeys = sortbyOrder(conf.metakeys, order);
 
-export default function(options = {}) {
-	const opt = Object.assign({
-		file: null,
-		meta: null,
-		// script manager : 'tampermonkey' | 'greasemonkey3' | 'greasemonkey4' | 'compatible'(default)
-		manager: 'compatible',
-		order: ['name', 'description', 'namespace', '...', 'grant'],
-		version: null
-	}, options);
+  return conf;
+};
 
-	const meta = {
-		name: 'New Userscript',
-		namespace: 'FlandreDaisuki/rollup-plugin-userscript-metablock'
-	};
+const transformAll = (conf) => {
+  const entries = [];
+  for (const [metakey, metavalue] of Object.entries(conf.metakeys)) {
+    const info = getMetaEntry([metakey, metavalue], conf);
+    if (info) {
+      entries.push(...info);
+    }
+  }
+  return entries;
+};
 
-	if (opt.file) {
-		if (!existsSync(opt.file)) {
-			throw new Error(`Metablock file not found: ${opt.file}`);
-		}
+const renderAll = (entries) => {
+  const counter = {
+    name: 0,
+    desc: 0,
+    other: 0,
+  };
 
-		let json;
-		switch (extname(opt.file)) {
-		case '.json':
-			json = JSON.parse(readFileSync(opt.file, 'utf8'));
-			break;
-		case '.js':
-			json = require(opt.file);
-			break;
-		}
+  for (const entry of entries) {
+    const first = entry[0];
+    if (/^name(:.*)?$/.test(first)) {
+      counter.name = Math.max(counter.name, first.length);
+    } else if (/^description(:.*)?$/.test(first)) {
+      counter.desc = Math.max(counter.desc, first.length);
+    } else {
+      counter.other = Math.max(counter.other, first.length);
+    }
+  }
 
-		Object.assign(meta, json);
-	}
+  const _name = counter.name === 'name'.length;
+  const _desc = counter.desc === 'description'.length;
+  if (_name && _desc) {
+    counter.name
+    = counter.desc
+    = counter.other
+    = Math.max(counter.name, counter.desc, counter.other);
+  } else if (_name) {
+    counter.name
+    = counter.other
+    = Math.max(counter.name, counter.other);
+  } else if (_desc) {
+    counter.desc
+    = counter.other
+    = Math.max(counter.desc, counter.other);
+  }
 
-	if(opt.meta){
-		Object.assign(meta, opt.meta);
-	}
+  const lines = [];
+  lines.push('// ==UserScript==');
+  for (const entry of entries) {
+    const first = entry[0];
+    if (/^name(:.*)?$/.test(first)) {
+      lines.push(`// @${first.padEnd(counter.name, ' ')} ${entry[1]}`);
+    } else if (/^description(:.*)?$/.test(first)) {
+      lines.push(`// @${first.padEnd(counter.desc, ' ')} ${entry[1]}`);
+    } else {
+      lines.push(`// @${first.padEnd(counter.other, ' ')} ${entry.slice(1).join(' ')}`);
+    }
+  }
+  lines.push('// ==/UserScript==');
 
-	if (opt.version) {
-		meta.version = opt.version;
-	}
+  return lines.map(l => l.trim()).join('\n');
+};
 
-	// always grant
-	if(!isValid(meta.grant)) {
-		meta.grant = 'none';
-	}
+export default function metablock(options = {}) {
+  const conf = parseOptions(options);
+  debug('plugin:top::conf')(conf);
 
-	if (meta.match) {
-		if(Array.isArray(meta.match)) {
-			for (const urlPattern of meta.match) {
-				if(!validateMatchPattern(urlPattern)) {
-					throw new Error(`Invalid match pattern: ${urlPattern}.`);
-				}
-			}
-		} else {
-			if(!validateMatchPattern(meta.match)) {
-				throw new Error(`Invalid match pattern: ${meta.match}.`);
-			}
-		}
-	}
+  const entries = transformAll(conf);
+  debug('plugin:top::entries')(entries);
 
-	// if no include rule, greasemonkey assume `@include *` but tampermonkey don't.
-	if (!isValid(meta.include) && !isValid(meta.match) && opt.manager === 'compatible') {
-		meta.include = '*';
-	}
+  const final = renderAll(entries);
+  debug('plugin:top::final')(final);
 
-	// process key-value form name / description
-	for (const [metaKey, metaValue] of Object.entries(meta)) {
-		if ((metaKey === 'name' || metaKey === 'description') && typeof metaValue === 'object') {
-			if(!metaValue.default) {
-				throw new Error(`The key-value ${metaKey} need to provide default attribute.`);
-			}
-
-			delete meta[metaKey];
-
-			for (const [lang, str] of Object.entries(metaValue)) {
-				if (lang === 'default') {
-					meta[metaKey] = str;
-				} else {
-					meta[`${metaKey}:${lang}`] = str;
-				}
-			}
-		}
-	}
-
-	Set.prototype.difference = function(setB) {
-		for (const elem of setB) {
-			this.delete(elem);
-		}
-	};
-
-	// reorder metakeys
-	const metaKeySet = new Set(Object.keys(meta));
-	const [pre, post] = [[], []];
-	let isToPre = true;
-	for (const oKey of opt.order) {
-		if (oKey === '...') {
-			isToPre = false;
-		} else {
-			const keyIncludeOKey = [...metaKeySet].filter(k => k.includes(oKey));
-			keyIncludeOKey.sort();
-			if (isToPre) {
-				pre.push(...keyIncludeOKey);
-			} else {
-				post.push(...keyIncludeOKey);
-			}
-			metaKeySet.difference(keyIncludeOKey);
-		}
-	}
-
-	const orderedMetaKeys = [...pre, ...metaKeySet, ...post];
-	const orderedMeta = {};
-	for (const omkey of orderedMetaKeys) {
-		orderedMeta[omkey] = meta[omkey];
-	}
-
-	delete Set.prototype.difference;
-
-	// process all metakeys
-	const metaOutputList = [];
-	const maxMetaKeyLength = Object.keys(orderedMeta).reduce((prev, val) => Math.max(prev, val.length), 0);
-
-	for (const [metaKey, metaValue] of Object.entries(orderedMeta)) {
-		for (const processed of processMetaValue(metaValue)) {
-			metaOutputList.push(toMetaBlockString(metaKey, processed, maxMetaKeyLength));
-		}
-	}
-
-	metaOutputList.unshift('// ==UserScript==');
-	metaOutputList.push('// ==/UserScript==');
-	const metaOutputString = `${metaOutputList.join('\n')}\n\n`;
-
-	return {
-		name: 'rollup-plugin-userscript-metablock',
-		transformBundle(source) {
-			return metaOutputString + source;
-		}
-	};
+  return {
+    intro: final,
+  };
 }

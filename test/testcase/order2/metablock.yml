@@ -1,0 +1,8 @@
+name: My First Userscript
+version: "1.0.0"
+description:
+  default: This is my first userscript
+  zh-TW: 這是我的第一個腳本
+grant:
+  - GM_getValue
+  - GM_setValue
