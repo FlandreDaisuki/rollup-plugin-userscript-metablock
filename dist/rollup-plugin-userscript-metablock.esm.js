@@ -531,7 +531,9 @@ const loadFile = (filename = './metablock.json') => {
     }
 
     case '.js': {
-      pathInfo.dir = process.cwd();
+      if (!path.isAbsolute(filename)) {
+        pathInfo.dir = process.cwd();
+      }
       const loaded = require(path.format(pathInfo));
       if (loaded.default) {
         Object.assign(keys, SIMPLEST_META, loaded.default);
@@ -751,7 +753,9 @@ function metablock(options = {}) {
   debug('plugin:top::final')(final);
 
   return {
-    intro: final,
+    renderChunk(code) {
+      return (final + '\n\n' + code).replace(/\n+$/g, '\n');
+    },
   };
 }
 
