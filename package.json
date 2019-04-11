@@ -7,7 +7,7 @@
   "scripts": {
     "test": "export NODE_ENV=test; mocha --require esm --recursive",
     "build": "rollup -c",
-    "publish": "npm run build"
+    "publish": "npm run build && node npm-scripts/publish.js"
   },
   "repository": {
     "type": "git",

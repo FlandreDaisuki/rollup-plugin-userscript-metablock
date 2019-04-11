@@ -13,15 +13,19 @@ var semver = _interopDefault(require('semver'));
 const jclone = (o) => JSON.parse(JSON.stringify(o));
 const isString = (v) => typeof(v) === 'string';
 const isObject = (v) => typeof(v) === 'object' && v !== null;
-const isMatchPattern = (s) => /^([*]|https?|file|ftp):\/\/([*]|[*][.][^*/]+)\/.*$/u.test(s);
+const isMatchPattern = (s) => /^([*]|https?|file|ftp):\/\/([*]|(?:\*\.)?[^*/]*)\/.*$/u.test(s);
+const isGlobURI = (s) => (/^\/.*\/$/).test(s) || Boolean(validUrl.isUri(s)) || (isString(s) && s.includes('*'));
 const isIPv4 = (s) => {
   if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(s)) {
     return s.split('.').filter(Boolean).map(t => parseInt(t)).every(n => n >= 0 && n <= 255);
   }
   return false;
 };
+const noop = () => {};
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 const print = {
-  warn: console.warn.bind(console, chalk.yellow('⚠')),
+  warn: !isTestEnv ? console.warn.bind(console, chalk.yellow('⚠')) : noop,
 };
 
 class FileNotFound extends Error {}
@@ -37,17 +41,41 @@ const DEFAULT_METAS = {
 };
 
 const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
+  debug('meta:getMetaEntry::[metakey, metavalue]')([metakey, metavalue]);
   const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
 
-  if (!keynames.includes(metakey)) {
-    if (validator === 'warn') { print.warn(`The script manager doesn't support metakey: ${metakey}`); }
+  const mk = metakey.trim();
+
+  let mv = metavalue;
+  if (isString(metavalue)) {
+    mv = metavalue.trim();
+  } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
+    mv = metavalue.map(v => v.trim());
+  } else if (isObject(metavalue)) {
+    mv = Object.entries(metavalue)
+      .map(([k, v]) => {
+        if (isString(v)) {
+          return [k, v.trim()];
+        }
+        return [k, v];
+      })
+      .reduce((prev, [k, v]) => {
+        prev[k] = v;
+        return prev;
+      }, {});
+  }
+
+  if (!keynames.includes(mk)) {
+    if (validator === 'warn') { print.warn(`The script manager doesn't support metakey: ${mk}`); }
     if (validator === 'error') {
-      throw new UnknownMetakeyToScriptManager(`The script manager doesn't support metakey: ${metakey}`);
+      throw new UnknownMetakeyToScriptManager(`The script manager doesn't support metakey: ${mk}`);
     }
     return null;
   }
 
-  return keyfuncs[metakey](metavalue, validator, manager) || [[metakey, DEFAULT_METAS[metakey]]];
+  const result = keyfuncs[mk](mv, validator, manager);
+  const defmeta = DEFAULT_METAS[mk];
+  return defmeta ? result || [[mk, defmeta]] : result;
 };
 
 const _validator_tmpl = (vtor, msg) => {
@@ -99,9 +127,10 @@ const _binary_strings = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_string(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_string(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
     return null;
@@ -115,7 +144,7 @@ const _binary_uri = (keyname) => (val, vtor) => {
   }
 
   if (isString(val)) {
-    if (!validUrl.isUri(val) && vtor !== 'off') {
+    if (!validUrl.isUri(val)) {
       _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid URI`);
     }
     return [[keyname, val]];
@@ -134,9 +163,10 @@ const _binary_uris = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_uri(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_uri(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
     return null;
@@ -150,7 +180,7 @@ const _binary_globuri = (keyname) => (val, vtor) => {
   }
 
   if (isString(val)) {
-    if (val.includes('*') || (/^\/.*\/$/).test(val)) {
+    if (isGlobURI(val)) {
       return [[keyname, val]];
     } else {
       return _binary_uri(keyname)(val, vtor);
@@ -170,9 +200,10 @@ const _binary_globuris = (keyname) => (val, vtor) => {
   if (isString(val)) {
     return _binary_globuri(keyname)(val, vtor);
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       return prev.concat(_binary_globuri(keyname)(curr, vtor));
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be globuri string or globuri string[] type`);
     return null;
@@ -180,7 +211,7 @@ const _binary_globuris = (keyname) => (val, vtor) => {
 };
 
 const _binary_enum = (keyname, enumset) => (val, vtor) => {
-  if (val !== undefined) {
+  if (val === undefined) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be undefined`);
     return null;
   }
@@ -197,6 +228,54 @@ const _binary_enum = (keyname, enumset) => (val, vtor) => {
   }
 };
 
+const _ternary_uri = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+
+  if (isObject(val)) {
+    const entries = Object.entries(val);
+    for (const [rname, uri] of entries) {
+      if (!validUrl.isUri(String(uri))) {
+        _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
+      }
+    }
+    return entries.map(entry => [keyname, ...entry.map(String)]);
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
+    return null;
+  }
+};
+
+const _binary_version = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+
+  if (semver.valid(val)) {
+    return [[keyname, semver.clean(val)]];
+  }
+
+  const coerce = semver.coerce(val);
+  if (semver.valid(coerce)) {
+    _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
+    return [[keyname, coerce.version]];
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s matavalue is invalid`);
+    return null;
+  }
+};
+
+const _unary = (keyname) => (val, vtor) => {
+  if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+  return val ? [[keyname]] : null;
+};
+
 const _binary_matches = (keyname) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
@@ -209,7 +288,7 @@ const _binary_matches = (keyname) => (val, vtor) => {
     }
     return [[keyname, val]];
   } else if (Array.isArray(val)) {
-    return val.reduce((prev, curr) => {
+    const goods = val.reduce((prev, curr) => {
       if (isString(curr)) {
         if (!isMatchPattern(curr)) {
           _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid match pattern string`);
@@ -218,12 +297,14 @@ const _binary_matches = (keyname) => (val, vtor) => {
       }
       return prev;
     }, []).filter(Boolean);
+    return goods.length ? goods : null;
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be match pattern string or match pattern string[] type`);
     return null;
   }
 };
 
+/* eslint-disable-next-line no-unused-vars */
 const _binary_grant = (val, vtor, sm) => {
   const keyname = 'grant';
   if (!val) {
@@ -239,6 +320,7 @@ const _binary_grant = (val, vtor, sm) => {
     return null;
   }
 };
+
 const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
 const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
@@ -252,54 +334,9 @@ const BASIC_METAKEY_FUNCS = {
   icon: _binary_uri('icon'),
   require: _binary_uris('require'),
   'run-at': _binary_enum('run-at', RUNAT_ENUM),
-  resource: (val, vtor) => {
-    const keyname = 'resource';
-    if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
-      return null;
-    }
-
-    if (isObject(val)) {
-      const entries = Object.entries(val);
-      for (const [rname, uri] of entries) {
-        if (!validUrl.isUri(uri)) {
-          _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
-        }
-      }
-      return entries.map(entry => [keyname, ...entry]);
-    } else {
-      _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
-      return null;
-    }
-  },
-  version: (val, vtor) => {
-    const keyname = 'version';
-    if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
-      return null;
-    }
-
-    if (semver.valid(val)) {
-      return [[keyname, semver.clean(val)]];
-    }
-
-    const coerce = semver.coerce(val);
-    if (semver.valid(coerce)) {
-      _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
-      return [[keyname, coerce.version]];
-    } else {
-      _validator_tmpl(vtor, `${keyname}'s matavalue is invalid`);
-      return null;
-    }
-  },
-  noframes:(val, vtor) => {
-    const keyname = 'noframes';
-    if (val !== undefined) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be undefined`);
-      return null;
-    }
-    return val ? [[keyname]] : null;
-  },
+  resource: _ternary_uri('resource'),
+  version: _binary_version('version'),
+  noframes: _unary('noframes'),
   grant: _binary_grant,
 };
 
@@ -357,12 +394,16 @@ const TM_METAKEY_FUNCS = {
       }
       return [[keyname, val]];
     } else if (Array.isArray(val) && val.length && val.every(isString)) {
-      for (const v of val) {
-        if (!isValidConnect(v)) {
-          _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+      const goods = val.reduce((prev, curr) => {
+        if (isString(curr)) {
+          if (!isValidConnect(curr)) {
+            _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+          }
+          return prev.concat([[keyname, curr]]);
         }
-      }
-      return val.map(v => [keyname, v]);
+        return prev;
+      }, []).filter(Boolean);
+      return goods.length ? goods : null;
     } else {
       _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
       return null;
@@ -479,7 +520,7 @@ const DEFAULT_ORDER = [
 const loadFile = (filename = './metablock.json') => {
   const p = debug('options:loadFile');
   const keys = {};
-  // p('cwd', process.cwd());
+  p('cwd', process.cwd());
 
   if (!filename) {
     Object.assign(keys, SIMPLEST_META);
@@ -494,7 +535,8 @@ const loadFile = (filename = './metablock.json') => {
     }
 
     case '.js': {
-      const loaded = require(filename);
+      pathInfo.dir = process.cwd();
+      const loaded = require(path.format(pathInfo));
       if (loaded.default) {
         Object.assign(keys, SIMPLEST_META, loaded.default);
       } else if (Object.keys(loaded).length) {
@@ -566,8 +608,17 @@ const getValidator = (vtor) => {
   }
 };
 
-const getValidOrder = (order) => {
-  const orderSet = new Set(order);
+const getValidOrder = (order = []) => {
+  const _order = jclone(order);
+
+  const i = _order.indexOf('...');
+  if (i >= 0) {
+    _order.splice(i, 1, ...DEFAULT_ORDER);
+  } else {
+    _order.push(...DEFAULT_ORDER);
+  }
+
+  const orderSet = new Set(_order);
   const cloned = [...orderSet];
   for (const key of cloned) {
     if (key !== '...' && !isValidMetakeyName(key)) {
@@ -623,7 +674,8 @@ const parseOptions = (options) => {
   }, {});
 
   // order metakeys
-  const order = getValidOrder((options.order || []).concat(DEFAULT_ORDER));
+  const order = getValidOrder(options.order);
+  debug('plugin:parseOptions::order')(order);
   conf.metakeys = sortbyOrder(conf.metakeys, order);
 
   return conf;
@@ -642,10 +694,11 @@ const transformAll = (conf) => {
 
 const renderAll = (entries) => {
   const counter = {
-    name:0,
-    desc:0,
-    other:0,
+    name: 0,
+    desc: 0,
+    other: 0,
   };
+
   for (const entry of entries) {
     const first = entry[0];
     if (/^name(:.*)?$/.test(first)) {
@@ -655,6 +708,23 @@ const renderAll = (entries) => {
     } else {
       counter.other = Math.max(counter.other, first.length);
     }
+  }
+
+  const _name = counter.name === 'name'.length;
+  const _desc = counter.desc === 'description'.length;
+  if (_name && _desc) {
+    counter.name
+    = counter.desc
+    = counter.other
+    = Math.max(counter.name, counter.desc, counter.other);
+  } else if (_name) {
+    counter.name
+    = counter.other
+    = Math.max(counter.name, counter.other);
+  } else if (_desc) {
+    counter.desc
+    = counter.other
+    = Math.max(counter.desc, counter.other);
   }
 
   const lines = [];
