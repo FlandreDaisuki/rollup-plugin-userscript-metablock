@@ -49,7 +49,7 @@ describe('options:file', () => {
 
 describe('options:order', () => {
   const before = ['name', '...', 'not-metakeys', '...', 'grant', 'name:zh-TW'];
-  const after = ['name', '...', 'grant'];
+  const after = ['name', 'description', 'namespace', '...', 'grant'];
   it('getValidOrder()', () => {
     deepStrictEqual(after, getValidOrder(before));
   });
