@@ -1,5 +1,7 @@
 # rollup-plugin-userscript-metablock
 
+[![npm version](https://badge.fury.io/js/rollup-plugin-userscript-metablock.svg)](https://www.npmjs.com/package/rollup-plugin-userscript-metablock)
+
 Transform json file to userscript metablock and append on.
 
 Metakeys documents:
