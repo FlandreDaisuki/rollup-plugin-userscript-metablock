@@ -536,7 +536,7 @@ const loadFile = (filename = './metablock.json') => {
 
     case '.js': {
       if (!path.isAbsolute(filename)) {
-        pathInfo.dir = process.cwd();
+        pathInfo.dir = path.join(process.cwd(), pathInfo.dir);
       }
       const loaded = require(path.format(pathInfo));
       if (loaded.default) {
