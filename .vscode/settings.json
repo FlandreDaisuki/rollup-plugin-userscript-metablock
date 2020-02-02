@@ -1,10 +1,12 @@
 {
-	"[json]": {
-		"editor.quickSuggestions": {
-			"strings": true
-		},
-		"editor.formatOnSave": true
-	},
-	"eslint.autoFixOnSave": true,
-	"markdown.extension.toc.levels": "1..3"
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "markdown.extension.toc.levels": "1..3",
+  "[json]": {
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.formatOnSave": true
+  }
 }
