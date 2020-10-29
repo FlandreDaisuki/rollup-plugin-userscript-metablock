@@ -2,6 +2,7 @@ import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } 
 import { isValidMetakeyName, getMetaEntry } from './meta';
 import debug from 'debug';
 import { jclone, isObject } from './utils';
+import MagicString from 'magic-string';
 
 const parseOptions = (options) => {
   debug('plugin:parseOptions::raw options')(options);
@@ -110,7 +111,13 @@ export default function metablock(options = {}) {
 
   return {
     renderChunk(code) {
-      return (final + '\n\n' + code).replace(/\n+$/g, '\n');
+      const magicString = new MagicString(code)
+      magicString.prepend(final).trimEnd('\\n')
+      const result = { code: magicString.toString() }
+      if (options.sourcemap !== false) {
+        result.map = magicString.generateMap({ hires: true })
+      }
+      return result
     },
   };
 }
