@@ -112,7 +112,7 @@ export default function metablock(options = {}) {
   return {
     renderChunk(code) {
       const magicString = new MagicString(code)
-      magicString.prepend(final).trimEnd('\\n')
+      magicString.prepend(final + '\n').trimEnd('\\n')
       const result = { code: magicString.toString() }
       if (options.sourcemap !== false) {
         result.map = magicString.generateMap({ hires: true })
