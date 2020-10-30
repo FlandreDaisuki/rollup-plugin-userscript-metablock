@@ -9,6 +9,7 @@ var YAML = _interopDefault(require('js-yaml'));
 var chalk = _interopDefault(require('chalk'));
 var validUrl = require('valid-url');
 var semver = _interopDefault(require('semver'));
+var MagicString = _interopDefault(require('magic-string'));
 
 const jclone = (o) => JSON.parse(JSON.stringify(o));
 const isString = (v) => typeof(v) === 'string';
@@ -758,7 +759,13 @@ function metablock(options = {}) {
 
   return {
     renderChunk(code) {
-      return (final + '\n\n' + code).replace(/\n+$/g, '\n');
+      const magicString = new MagicString(code);
+      magicString.prepend(final + '\n').trimEnd('\\n');
+      const result = { code: magicString.toString() };
+      if (options.sourcemap !== false) {
+        result.map = magicString.generateMap({ hires: true });
+      }
+      return result
     },
   };
 }

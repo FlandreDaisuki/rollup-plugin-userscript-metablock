@@ -7,6 +7,7 @@ const external = [
   'semver',
   'js-yaml',
   'valid-url',
+  'magic-string'
 ];
 
 export default [{

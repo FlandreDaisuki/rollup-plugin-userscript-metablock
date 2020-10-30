@@ -5,6 +5,7 @@ import YAML from 'js-yaml';
 import chalk from 'chalk';
 import { isUri } from 'valid-url';
 import semver from 'semver';
+import MagicString from 'magic-string';
 
 const jclone = (o) => JSON.parse(JSON.stringify(o));
 const isString = (v) => typeof(v) === 'string';
@@ -754,7 +755,13 @@ function metablock(options = {}) {
 
   return {
     renderChunk(code) {
-      return (final + '\n\n' + code).replace(/\n+$/g, '\n');
+      const magicString = new MagicString(code);
+      magicString.prepend(final + '\n').trimEnd('\\n');
+      const result = { code: magicString.toString() };
+      if (options.sourcemap !== false) {
+        result.map = magicString.generateMap({ hires: true });
+      }
+      return result
     },
   };
 }
