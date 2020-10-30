@@ -110,11 +110,11 @@ export default function metablock(options = {}) {
   debug('plugin:top::final')(final);
 
   return {
-    renderChunk(code) {
+    renderChunk(code, renderedChunk, outputOptions) {
       const magicString = new MagicString(code);
       magicString.prepend(final + '\n').trimEnd('\\n');
       const result = { code: magicString.toString() };
-      if (options.sourcemap !== false) {
+      if (outputOptions.sourcemap !== false) {
         result.map = magicString.generateMap({ hires: true });
       }
       return result;
