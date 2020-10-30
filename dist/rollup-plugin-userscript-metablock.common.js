@@ -26,7 +26,7 @@ const isMatchPattern = (s) => /^([*]|https?|file|ftp):\/\/([*]|(?:\*\.)?[^*/]*)\
 const isGlobURI = (s) => (/^\/.*\/$/).test(s) || Boolean(validUrl.isUri(s)) || (isString(s) && s.includes('*'));
 const isIPv4 = (s) => {
   if (/^\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/.test(s)) {
-    return s.split('.').filter(Boolean).map(t => parseInt(t)).every(n => n >= 0 && n <= 255);
+    return s.split('.').filter(Boolean).map((t) => parseInt(t)).every((n) => n >= 0 && n <= 255);
   }
   return false;
 };
@@ -59,7 +59,7 @@ const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
   if (isString(metavalue)) {
     mv = metavalue.trim();
   } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
-    mv = metavalue.map(v => v.trim());
+    mv = metavalue.map((v) => v.trim());
   } else if (isObject(metavalue)) {
     mv = Object.entries(metavalue)
       .map(([k, v]) => {
@@ -250,7 +250,7 @@ const _ternary_uri = (keyname) => (val, vtor) => {
         _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
       }
     }
-    return entries.map(entry => [keyname, ...entry.map(String)]);
+    return entries.map((entry) => [keyname, ...entry.map(String)]);
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
     return null;
@@ -318,19 +318,19 @@ const _binary_grant = (val, vtor, sm) => {
   const keyname = 'grant';
   if (!val) {
     return [[keyname, 'none']];
-  } else if (isString(val)){
+  } else if (isString(val)) {
     // TODO: script manager dependency
     return [[keyname, val]];
   } else if (Array.isArray(val) && val.length && val.every(isString)) {
     // TODO: script manager dependency
-    return val.map(v => [keyname, v]);
+    return val.map((v) => [keyname, v]);
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
     return null;
   }
 };
 
-const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
+const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map((s) => `document-${s}`).concat('context-menu');
 const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
 const BASIC_METAKEY_FUNCS = {
@@ -752,7 +752,7 @@ const renderAll = (entries) => {
   }
   lines.push('// ==/UserScript==');
 
-  return lines.map(l => l.trim()).join('\n');
+  return lines.map((l) => l.trim()).join('\n');
 };
 
 function metablock(options = {}) {
@@ -773,7 +773,7 @@ function metablock(options = {}) {
       if (options.sourcemap !== false) {
         result.map = magicString.generateMap({ hires: true });
       }
-      return result
+      return result;
     },
   };
 }
