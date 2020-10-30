@@ -1,15 +1,23 @@
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var fs = _interopDefault(require('fs'));
-var path = _interopDefault(require('path'));
-var debug = _interopDefault(require('debug'));
-var YAML = _interopDefault(require('js-yaml'));
-var chalk = _interopDefault(require('chalk'));
+var fs = require('fs');
+var path = require('path');
+var debug = require('debug');
+var YAML = require('js-yaml');
+var chalk = require('chalk');
 var validUrl = require('valid-url');
-var semver = _interopDefault(require('semver'));
-var MagicString = _interopDefault(require('magic-string'));
+var semver = require('semver');
+var MagicString = require('magic-string');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
+var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
+var debug__default = /*#__PURE__*/_interopDefaultLegacy(debug);
+var YAML__default = /*#__PURE__*/_interopDefaultLegacy(YAML);
+var chalk__default = /*#__PURE__*/_interopDefaultLegacy(chalk);
+var semver__default = /*#__PURE__*/_interopDefaultLegacy(semver);
+var MagicString__default = /*#__PURE__*/_interopDefaultLegacy(MagicString);
 
 const jclone = (o) => JSON.parse(JSON.stringify(o));
 const isString = (v) => typeof(v) === 'string';
@@ -26,7 +34,7 @@ const noop = () => {};
 const isTestEnv = process.env.NODE_ENV === 'test';
 
 const print = {
-  warn: !isTestEnv ? console.warn.bind(console, chalk.yellow('⚠')) : noop,
+  warn: !isTestEnv ? console.warn.bind(console, chalk__default['default'].yellow('⚠')) : noop,
 };
 
 class FileNotFound extends Error {}
@@ -42,7 +50,7 @@ const DEFAULT_METAS = {
 };
 
 const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
-  debug('meta:getMetaEntry::[metakey, metavalue]')([metakey, metavalue]);
+  debug__default['default']('meta:getMetaEntry::[metakey, metavalue]')([metakey, metavalue]);
   const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
 
   const mk = metakey.trim();
@@ -255,12 +263,12 @@ const _binary_version = (keyname) => (val, vtor) => {
     return null;
   }
 
-  if (semver.valid(val)) {
-    return [[keyname, semver.clean(val)]];
+  if (semver__default['default'].valid(val)) {
+    return [[keyname, semver__default['default'].clean(val)]];
   }
 
-  const coerce = semver.coerce(val);
-  if (semver.valid(coerce)) {
+  const coerce = semver__default['default'].coerce(val);
+  if (semver__default['default'].valid(coerce)) {
     _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
     return [[keyname, coerce.version]];
   } else {
@@ -519,27 +527,27 @@ const DEFAULT_ORDER = [
 ];
 
 const loadFile = (filename = './metablock.json') => {
-  const p = debug('options:loadFile');
+  const p = debug__default['default']('options:loadFile');
   const keys = {};
   p('cwd', process.cwd());
 
   if (!filename) {
     Object.assign(keys, SIMPLEST_META);
-  } else if (fs.existsSync(filename)) {
-    const pathInfo = path.parse(filename);
+  } else if (fs__default['default'].existsSync(filename)) {
+    const pathInfo = path__default['default'].parse(filename);
     p('pathInfo', pathInfo);
 
     switch (pathInfo.ext) {
     case '.json': {
-      Object.assign(keys, SIMPLEST_META, JSON.parse(fs.readFileSync(filename)));
+      Object.assign(keys, SIMPLEST_META, JSON.parse(fs__default['default'].readFileSync(filename)));
       break;
     }
 
     case '.js': {
-      if (!path.isAbsolute(filename)) {
-        pathInfo.dir = path.join(process.cwd(), pathInfo.dir);
+      if (!path__default['default'].isAbsolute(filename)) {
+        pathInfo.dir = path__default['default'].join(process.cwd(), pathInfo.dir);
       }
-      const loaded = require(path.format(pathInfo));
+      const loaded = require(path__default['default'].format(pathInfo));
       if (loaded.default) {
         Object.assign(keys, SIMPLEST_META, loaded.default);
       } else if (Object.keys(loaded).length) {
@@ -552,7 +560,7 @@ const loadFile = (filename = './metablock.json') => {
 
     case '.yml':
     case '.yaml': {
-      Object.assign(keys, SIMPLEST_META, YAML.safeLoad(fs.readFileSync(filename), { filename }));
+      Object.assign(keys, SIMPLEST_META, YAML__default['default'].safeLoad(fs__default['default'].readFileSync(filename), { filename }));
       break;
     }
 
@@ -653,7 +661,7 @@ const sortbyOrder = (metakeys, order) => {
 };
 
 const parseOptions = (options) => {
-  debug('plugin:parseOptions::raw options')(options);
+  debug__default['default']('plugin:parseOptions::raw options')(options);
 
   const conf = {
     metakeys: loadFile(options.file),
@@ -678,7 +686,7 @@ const parseOptions = (options) => {
 
   // order metakeys
   const order = getValidOrder(options.order);
-  debug('plugin:parseOptions::order')(order);
+  debug__default['default']('plugin:parseOptions::order')(order);
   conf.metakeys = sortbyOrder(conf.metakeys, order);
 
   return conf;
@@ -749,17 +757,17 @@ const renderAll = (entries) => {
 
 function metablock(options = {}) {
   const conf = parseOptions(options);
-  debug('plugin:top::conf')(conf);
+  debug__default['default']('plugin:top::conf')(conf);
 
   const entries = transformAll(conf);
-  debug('plugin:top::entries')(entries);
+  debug__default['default']('plugin:top::entries')(entries);
 
   const final = renderAll(entries);
-  debug('plugin:top::final')(final);
+  debug__default['default']('plugin:top::final')(final);
 
   return {
     renderChunk(code) {
-      const magicString = new MagicString(code);
+      const magicString = new MagicString__default['default'](code);
       magicString.prepend(final + '\n').trimEnd('\\n');
       const result = { code: magicString.toString() };
       if (options.sourcemap !== false) {

@@ -16,6 +16,7 @@ export default [{
   output: [{
     file: 'dist/rollup-plugin-userscript-metablock.common.js',
     format: 'cjs',
+    exports: 'default'
   }],
 }, {
   external,

@@ -15,7 +15,7 @@ const doIntegral = async(path) => {
   });
 
   const bundleOut = await bundle.generate({
-    output: 'out.js',
+    file: 'out.js',
     format: 'esm',
   });
 
