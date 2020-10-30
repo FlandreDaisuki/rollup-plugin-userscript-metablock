@@ -20,7 +20,7 @@ export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
   if (isString(metavalue)) {
     mv = metavalue.trim();
   } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
-    mv = metavalue.map(v => v.trim());
+    mv = metavalue.map((v) => v.trim());
   } else if (isObject(metavalue)) {
     mv = Object.entries(metavalue)
       .map(([k, v]) => {
@@ -211,7 +211,7 @@ export const _ternary_uri = (keyname) => (val, vtor) => {
         _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
       }
     }
-    return entries.map(entry => [keyname, ...entry.map(String)]);
+    return entries.map((entry) => [keyname, ...entry.map(String)]);
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
     return null;
@@ -279,19 +279,19 @@ export const _binary_grant = (val, vtor, sm) => {
   const keyname = 'grant';
   if (!val) {
     return [[keyname, 'none']];
-  } else if (isString(val)){
+  } else if (isString(val)) {
     // TODO: script manager dependency
     return [[keyname, val]];
   } else if (Array.isArray(val) && val.length && val.every(isString)) {
     // TODO: script manager dependency
-    return val.map(v => [keyname, v]);
+    return val.map((v) => [keyname, v]);
   } else {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
     return null;
   }
 };
 
-export const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map(s => `document-${s}`).concat('context-menu');
+export const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map((s) => `document-${s}`).concat('context-menu');
 export const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
 export const BASIC_METAKEY_FUNCS = {

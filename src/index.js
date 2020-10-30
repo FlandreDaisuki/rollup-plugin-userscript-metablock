@@ -96,7 +96,7 @@ const renderAll = (entries) => {
   }
   lines.push('// ==/UserScript==');
 
-  return lines.map(l => l.trim()).join('\n');
+  return lines.map((l) => l.trim()).join('\n');
 };
 
 export default function metablock(options = {}) {
@@ -111,13 +111,13 @@ export default function metablock(options = {}) {
 
   return {
     renderChunk(code) {
-      const magicString = new MagicString(code)
-      magicString.prepend(final + '\n').trimEnd('\\n')
-      const result = { code: magicString.toString() }
+      const magicString = new MagicString(code);
+      magicString.prepend(final + '\n').trimEnd('\\n');
+      const result = { code: magicString.toString() };
       if (options.sourcemap !== false) {
-        result.map = magicString.generateMap({ hires: true })
+        result.map = magicString.generateMap({ hires: true });
       }
-      return result
+      return result;
     },
   };
 }

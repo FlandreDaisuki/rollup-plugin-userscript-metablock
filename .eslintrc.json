@@ -12,40 +12,24 @@
     "ecmaVersion": 2020
   },
   "rules": {
-    "array-bracket-newline": [
-      "error",
-      "consistent"
-    ],
-    "arrow-spacing": "error",
-    "brace-style": [
-      "error",
-      "1tbs",
-      {
-        "allowSingleLine": true
-      }
-    ],
-    "comma-dangle": [
-      "error",
-      "always-multiline"
-    ],
+    "indent": ["error", 2],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    // "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+    "arrow-parens": ["error", "always"],
+    "comma-dangle": ["error", "always-multiline"],
+    // spacings
+    "key-spacing": "error",
     "comma-spacing": "error",
-    "indent": [
-      "error",
-      2
-    ],
+    "arrow-spacing": "error",
     "keyword-spacing": "error",
-    "no-multi-spaces": "error",
-    "object-curly-spacing": [
-      "error",
-      "always"
-    ],
-    "quotes": [
-      "error",
-      "single"
-    ],
-    "semi": "error",
+    "object-curly-spacing": ["error", "always"],
     "space-infix-ops": "error",
-    "no-console": "off",
-    "key-spacing": "error"
+    "space-before-blocks": "error",
+    "space-before-function-paren": ["error", "never"],
+    // warnings
+    "no-unused-vars": "warn",
+    // prefers
+    "prefer-const": "error",
   }
 }

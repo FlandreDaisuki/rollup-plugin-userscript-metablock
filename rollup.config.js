@@ -7,7 +7,7 @@ const external = [
   'semver',
   'js-yaml',
   'valid-url',
-  'magic-string'
+  'magic-string',
 ];
 
 export default [{
@@ -16,7 +16,7 @@ export default [{
   output: [{
     file: 'dist/rollup-plugin-userscript-metablock.common.js',
     format: 'cjs',
-    exports: 'default'
+    exports: 'default',
   }],
 }, {
   external,
