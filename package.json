@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Transform config file to userscript metablock and append on",
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
   "module": "dist/rollup-plugin-userscript-metablock.esm.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "test": "export NODE_ENV=test; mocha --require esm --recursive",
     "build": "rollup -c",
-    "prepublish": "npm test && npm run build && node npm-scripts/publish.js"
+    "prepare": "npm test && npm run build && node npm-scripts/publish.js"
   },
   "repository": {
     "type": "git",
@@ -21,17 +21,17 @@
   "author": "FlandreDaisuki <vbnm123c@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^7.12.1",
+    "eslint": "^7.23.0",
     "esm": "^3.2.25",
-    "mocha": "^8.2.0",
-    "rollup": "^2.32.1"
+    "mocha": "^8.3.2",
+    "rollup": "^2.44.0"
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "debug": "^4.2.0",
-    "js-yaml": "^3.14.0",
+    "debug": "^4.3.1",
+    "js-yaml": "^3.14.1",
     "magic-string": "^0.25.7",
-    "semver": "^7.3.2",
+    "semver": "^7.3.5",
     "valid-url": "^1.0.9"
   }
 }

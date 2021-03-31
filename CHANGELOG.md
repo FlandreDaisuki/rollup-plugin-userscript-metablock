@@ -1,3 +1,8 @@
+# v0.3.0
+
+- Add typings (#17)
+- Update deps
+
 # v0.2.6
 
 - Add option.sourcemap (#15)
