@@ -4,6 +4,7 @@
   "description": "Transform config file to userscript metablock and append on",
   "main": "dist/rollup-plugin-userscript-metablock.common.js",
   "module": "dist/rollup-plugin-userscript-metablock.esm.js",
+  "types": "types/rollup-plugin-userscript-metablock.d.ts",
   "scripts": {
     "test": "export NODE_ENV=test; mocha --require esm --recursive",
     "build": "rollup -c",
