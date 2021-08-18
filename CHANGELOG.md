@@ -1,3 +1,8 @@
+# v0.3.1
+
+- Add "localhost" to `@connect` (#19)
+- Update deps
+
 # v0.3.0
 
 - Add typings (#17)

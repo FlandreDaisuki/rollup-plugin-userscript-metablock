@@ -11,7 +11,7 @@ Metakeys documents:
 
 ## Installation
 
-```
+```sh
 npm install --save-dev rollup-plugin-userscript-metablock
 ```
 
