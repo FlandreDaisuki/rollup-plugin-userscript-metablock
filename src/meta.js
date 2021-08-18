@@ -354,7 +354,7 @@ export const TM_METAKEY_FUNCS = {
 
   connect: (val, vtor) => {
     const keyname = 'connect';
-    const isValidConnect = (v) => isIPv4(v) || isUri(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*';
+    const isValidConnect = (v) => isIPv4(v) || isUri(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*' || v === "localhost";
     if (!val) {
       _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
       return null;
