@@ -379,7 +379,7 @@ const TM_METAKEY_FUNCS = {
 
   connect: (val, vtor) => {
     const keyname = 'connect';
-    const isValidConnect = (v) => isIPv4(v) || isUri(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*';
+    const isValidConnect = (v) => isIPv4(v) || isUri(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*' || v === "localhost";
     if (!val) {
       _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
       return null;
@@ -548,7 +548,7 @@ const loadFile = (filename = './metablock.json') => {
 
     case '.yml':
     case '.yaml': {
-      Object.assign(keys, SIMPLEST_META, YAML.safeLoad(fs.readFileSync(filename), { filename }));
+      Object.assign(keys, SIMPLEST_META, YAML.load(fs.readFileSync(filename), { filename }));
       break;
     }
 
@@ -766,4 +766,4 @@ function metablock(options = {}) {
   };
 }
 
-export default metablock;
+export { metablock as default };

@@ -51,7 +51,7 @@ export const loadFile = (filename = './metablock.json') => {
 
     case '.yml':
     case '.yaml': {
-      Object.assign(keys, SIMPLEST_META, YAML.safeLoad(fs.readFileSync(filename), { filename }));
+      Object.assign(keys, SIMPLEST_META, YAML.load(fs.readFileSync(filename), { filename }));
       break;
     }
 

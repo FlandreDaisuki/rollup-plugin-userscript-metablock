@@ -21,15 +21,15 @@
   "author": "FlandreDaisuki <vbnm123c@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^7.23.0",
+    "eslint": "^7.32.0",
     "esm": "^3.2.25",
-    "mocha": "^8.3.2",
-    "rollup": "^2.44.0"
+    "mocha": "^8.4.0",
+    "rollup": "^2.56.2"
   },
   "dependencies": {
-    "chalk": "^4.1.0",
-    "debug": "^4.3.1",
-    "js-yaml": "^3.14.1",
+    "chalk": "^4.1.2",
+    "debug": "^4.3.2",
+    "js-yaml": "^4.1.0",
     "magic-string": "^0.25.7",
     "semver": "^7.3.5",
     "valid-url": "^1.0.9"
