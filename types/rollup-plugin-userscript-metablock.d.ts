@@ -29,6 +29,35 @@ declare module 'rollup-plugin-userscript-metablock' {
     version?: string;
     noframes?: true;
     grant?: string | string[];
+
+    updateURL?: string;
+    installURL?: string;
+    downloadURL?: string;
+    license?: string;
+    supportURL?: string;
+    contributionURL?: string;
+    contributionAmount?: string;
+    compatible?: string;
+    incompatible?: string;
+
+    author?: string;
+
+    /**
+     * The authors homepage that is used at the options page to link from the scripts name to the given page.
+     * Please note that if the @namespace tag starts with 'http://' its content will be used for this too.
+     */
+    homepage?: string;
+    homepageURL?: string;
+    website?: string;
+    source?: string;
+
+    defaulticon?: string;
+    icon64?: string;
+    iconURL?: string;
+    icon64URL?: string;
+
+    connect?: string | string[];
+    nocompat?: boolean;
   };
 
   export type Options = {
