@@ -29,6 +29,7 @@ declare module 'rollup-plugin-userscript-metablock' {
     version?: string;
     noframes?: true;
     grant?: string | string[];
+    antifeature?: string | string[];
 
     updateURL?: string;
     installURL?: string;

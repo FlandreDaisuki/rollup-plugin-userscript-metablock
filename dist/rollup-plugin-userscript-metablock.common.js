@@ -330,6 +330,24 @@ const _binary_grant = (val, vtor, sm) => {
   }
 };
 
+/* eslint-disable-next-line no-unused-vars */
+const _binary_antifeature = (val, vtor, sm) => {
+  const keyname = 'antifeature';
+    if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+  
+  if (isString(val)) {
+    return [[keyname, val]];
+  } else if (Array.isArray(val) && val.length && val.every(isString)) {
+    return val.map((v) => [keyname, v]);
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
+    return null;
+  }
+};
+
 const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map((s) => `document-${s}`).concat('context-menu');
 const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
@@ -347,6 +365,7 @@ const BASIC_METAKEY_FUNCS = {
   version: _binary_version('version'),
   noframes: _unary('noframes'),
   grant: _binary_grant,
+  antifeature: _binary_antifeature,
 };
 
 

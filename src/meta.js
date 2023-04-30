@@ -291,6 +291,24 @@ export const _binary_grant = (val, vtor, sm) => {
   }
 };
 
+/* eslint-disable-next-line no-unused-vars */
+export const _binary_antifeature = (val, vtor, sm) => {
+  const keyname = 'antifeature';
+    if (!val) {
+    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    return null;
+  }
+  
+  if (isString(val)) {
+    return [[keyname, val]];
+  } else if (Array.isArray(val) && val.length && val.every(isString)) {
+    return val.map((v) => [keyname, v]);
+  } else {
+    _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
+    return null;
+  }
+};
+
 export const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map((s) => `document-${s}`).concat('context-menu');
 export const INJECTINTO_ENUM = ['page', 'content', 'auto'];
 
@@ -308,6 +326,7 @@ export const BASIC_METAKEY_FUNCS = {
   version: _binary_version('version'),
   noframes: _unary('noframes'),
   grant: _binary_grant,
+  antifeature: _binary_antifeature,
 };
 export const BASIC_METAKEY_NAMES = Object.keys(BASIC_METAKEY_FUNCS);
 
