@@ -15,6 +15,7 @@
     - [version](#version)
     - [noframes](#noframes)
     - [grant](#grant)
+    - [antifeature](#antifeature)
 
 ## Basic Matas
 
@@ -235,5 +236,25 @@ If value is not valid **RUNAT-ENUM**, set to default value.
   'GM_getValue',
   'GM_setValue',
   'unsafeWindow'
+]
+```
+
+### antifeature
+
+| attr | value | description |
+|:-:|:-:|:-:|
+| type | `String` ||
+| example | `'ads'` ||
+| type | `String[]` ||
+| example | [antifeature-array-example](#antifeature-array-example) |  |
+|exception| `InvalidMetaValue` | invalid **API** by _manager_ in `String` type |
+|exception| `InvalidMetaValue` | include invalid **API** by _manager_ in `String[]` type |
+
+#### antifeature-array-example
+
+```js
+[
+  'ads',
+  'miner'
 ]
 ```
