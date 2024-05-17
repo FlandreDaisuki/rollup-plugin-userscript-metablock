@@ -3,3 +3,5 @@
 // @namespace npmjs.com/rollup-plugin-userscript-metablock
 // @grant     none
 // ==/UserScript==
+
+console.log('rollup-plugin-userscript-metablock');

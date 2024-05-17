@@ -1,10 +1,10 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import debug from 'debug';
 import YAML from 'js-yaml';
-import { jclone } from './utils';
-import { isValidMetakeyName, DEFAULT_METAS } from './meta';
-import { FileNotFound, UnsupportedFormat, UnknownScriptManager } from './errors';
+import { jclone } from './utils.js';
+import { isValidMetakeyName, DEFAULT_METAS } from './meta.js';
+import { FileNotFound, UnsupportedFormat, UnknownScriptManager } from './errors.js';
 
 
 export const SIMPLEST_META = jclone(DEFAULT_METAS);
@@ -17,28 +17,36 @@ export const DEFAULT_ORDER = [
   'grant',
 ];
 
-export const loadFile = (filename = './metablock.json') => {
+export const loadFile = async(filename = './metablock.json') => {
   const p = debug('options:loadFile');
   const keys = {};
   p('cwd', process.cwd());
 
   if (!filename) {
     Object.assign(keys, SIMPLEST_META);
-  } else if (fs.existsSync(filename)) {
+  } else {
+    try {
+      await fs.stat(filename);
+    } catch {
+      throw new FileNotFound(`${filename} not found.`);
+    }
+
     const pathInfo = path.parse(filename);
     p('pathInfo', pathInfo);
 
     switch (pathInfo.ext) {
     case '.json': {
-      Object.assign(keys, SIMPLEST_META, JSON.parse(fs.readFileSync(filename)));
+      Object.assign(keys, SIMPLEST_META, JSON.parse(await fs.readFile(filename)));
       break;
     }
 
-    case '.js': {
+    case '.js':
+    case '.cjs':
+    case '.mjs': {
       if (!path.isAbsolute(filename)) {
         pathInfo.dir = path.join(process.cwd(), pathInfo.dir);
       }
-      const loaded = require(path.format(pathInfo));
+      const loaded = await import(path.format(pathInfo));
       if (loaded.default) {
         Object.assign(keys, SIMPLEST_META, loaded.default);
       } else if (Object.keys(loaded).length) {
@@ -51,15 +59,13 @@ export const loadFile = (filename = './metablock.json') => {
 
     case '.yml':
     case '.yaml': {
-      Object.assign(keys, SIMPLEST_META, YAML.load(fs.readFileSync(filename), { filename }));
+      Object.assign(keys, SIMPLEST_META, YAML.load(await fs.readFile(filename), { filename }));
       break;
     }
 
     default:
       throw new UnsupportedFormat(`We don't support ${pathInfo.ext} now.`);
     }
-  } else {
-    throw new FileNotFound(`${filename} not found.`);
   }
 
   p('keys', keys);

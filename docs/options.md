@@ -14,7 +14,7 @@ The path of your metablock file.
 | attr | value | description |
 |:-:|:-:|:-:|
 | type | `String` ||
-| default | `'./metablock.json'` |support following<br>`.json`<br>`.js (module.exports)`<br>`.yml, .yaml` |
+| default | `'./metablock.json'` |support following<br>`.json`<br>`.js, .cjs, .mjs`<br>`.yml, .yaml` |
 | exception | `FileNotFound` | if path can't found |
 | exception | `UnsupportedFormat` | if file extension isn't supported |
 | exception | ??? | if parser throw exception |

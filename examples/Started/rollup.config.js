@@ -1,6 +1,6 @@
 import metablock from '../../src/index.js';
 
-process.chdir(__dirname);
+process.chdir(import.meta.dirname);
 
 export default {
   input: 'main.js',

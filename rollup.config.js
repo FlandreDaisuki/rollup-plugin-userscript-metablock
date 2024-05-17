@@ -1,26 +1,25 @@
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+
 const input = 'src/index.js';
-const external = [
-  'fs',
-  'path',
-  'chalk',
-  'debug',
-  'semver',
-  'js-yaml',
-  'valid-url',
-  'magic-string',
-];
 
 export default [{
-  external,
   input,
+  plugins: [
+    nodeResolve(),
+    commonjs(),
+  ],
   output: [{
     file: 'dist/rollup-plugin-userscript-metablock.common.js',
     format: 'cjs',
     exports: 'default',
   }],
 }, {
-  external,
   input,
+  plugins: [
+    nodeResolve(),
+    commonjs(),
+  ],
   output: [{
     file: 'dist/rollup-plugin-userscript-metablock.esm.js',
     format: 'esm',

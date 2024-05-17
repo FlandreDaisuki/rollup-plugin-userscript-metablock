@@ -7,3 +7,5 @@
 // @grant     GM_getValue
 // @grant     GM_setValue
 // ==/UserScript==
+
+console.log('rollup-plugin-userscript-metablock');
