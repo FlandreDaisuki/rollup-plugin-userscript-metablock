@@ -1,8 +1,7 @@
-import { isUri } from 'valid-url';
-import semver from 'semver';
-import { UnknownMetakeyToScriptManager, InvalidMetaValue } from './errors';
-import { isString, isObject, isMatchPattern, print as p, isIPv4, isGlobURI } from './utils';
 import debug from 'debug';
+import semver from 'semver';
+import { UnknownMetakeyToScriptManager, InvalidMetaValue } from './errors.js';
+import { isString, isObject, isMatchPattern, print as p, isIPv4, isGlobURI, isUrl } from './utils.js';
 
 export const DEFAULT_METAS = {
   name: 'New Script',
@@ -114,7 +113,7 @@ export const _binary_uri = (keyname) => (val, vtor) => {
   }
 
   if (isString(val)) {
-    if (!isUri(val)) {
+    if (!isUrl(val)) {
       _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid URI`);
     }
     return [[keyname, val]];
@@ -207,7 +206,7 @@ export const _ternary_uri = (keyname) => (val, vtor) => {
   if (isObject(val)) {
     const entries = Object.entries(val);
     for (const [rname, uri] of entries) {
-      if (!isUri(String(uri))) {
+      if (!isUrl(String(uri))) {
         _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
       }
     }
@@ -294,11 +293,11 @@ export const _binary_grant = (val, vtor, sm) => {
 /* eslint-disable-next-line no-unused-vars */
 export const _binary_antifeature = (val, vtor, sm) => {
   const keyname = 'antifeature';
-    if (!val) {
+  if (!val) {
     _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
     return null;
   }
-  
+
   if (isString(val)) {
     return [[keyname, val]];
   } else if (Array.isArray(val) && val.length && val.every(isString)) {
@@ -373,7 +372,7 @@ export const TM_METAKEY_FUNCS = {
 
   connect: (val, vtor) => {
     const keyname = 'connect';
-    const isValidConnect = (v) => isIPv4(v) || isUri(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*' || v === "localhost";
+    const isValidConnect = (v) => isIPv4(v) || isUrl(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*' || v === 'localhost';
     if (!val) {
       _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
       return null;

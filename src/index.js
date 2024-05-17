@@ -1,14 +1,14 @@
-import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } from './options';
-import { isValidMetakeyName, getMetaEntry } from './meta';
 import debug from 'debug';
-import { jclone, isObject } from './utils';
 import MagicString from 'magic-string';
+import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } from './options.js';
+import { isValidMetakeyName, getMetaEntry } from './meta.js';
+import { jclone, isObject } from './utils.js';
 
-const parseOptions = (options) => {
+const parseOptions = async(options) => {
   debug('plugin:parseOptions::raw options')(options);
 
   const conf = {
-    metakeys: loadFile(options.file),
+    metakeys: await loadFile(options.file),
     manager: getScriptManager(options.manager),
     validator: getValidator(options.validator),
   };
@@ -99,8 +99,8 @@ const renderAll = (entries) => {
   return lines.map((l) => l.trim()).join('\n');
 };
 
-export default function metablock(options = {}) {
-  const conf = parseOptions(options);
+export default async function metablock(options = {}) {
+  const conf = await parseOptions(options);
   debug('plugin:top::conf')(conf);
 
   const entries = transformAll(conf);
@@ -112,7 +112,7 @@ export default function metablock(options = {}) {
   return {
     renderChunk(code, renderedChunk, outputOptions) {
       const magicString = new MagicString(code);
-      magicString.prepend(final + '\n').trimEnd('\\n');
+      magicString.prepend(final + '\n\n').trimEnd('\\n');
       const result = { code: magicString.toString() };
       if (outputOptions.sourcemap !== false) {
         result.map = magicString.generateMap({ hires: true });

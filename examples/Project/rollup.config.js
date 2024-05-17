@@ -1,6 +1,6 @@
 import metablock from '../../src/index.js';
 
-process.chdir(__dirname);
+process.chdir(import.meta.dirname);
 
 export default {
   input: 'main.js',
@@ -12,5 +12,6 @@ export default {
     file: './meta.yml',
     override: {
       version: '5.4.3',
-    } })],
+    },
+  })],
 };
