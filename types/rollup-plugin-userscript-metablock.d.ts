@@ -59,6 +59,7 @@ declare module 'rollup-plugin-userscript-metablock' {
 
     connect?: string | string[];
     nocompat?: boolean;
+    sandbox?: 'raw' | 'JavaScript' | 'DOM';
   };
 
   export type Options = {

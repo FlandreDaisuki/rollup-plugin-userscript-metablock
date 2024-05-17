@@ -1,6 +1,19 @@
 import { expect } from 'vitest';
 import { describe, test } from 'vitest';
-import { getMetaEntry, DEFAULT_METAS, RUNAT_ENUM, _binary_enum, _ternary_uri, _binary_version, _unary, _binary_uri, _binary_uris, _binary_string, _multilingual } from '../src/meta';
+import {
+  getMetaEntry,
+  DEFAULT_METAS,
+  RUNAT_ENUM,
+  SANDBOX_ENUM,
+  _binary_enum,
+  _ternary_uri,
+  _binary_version,
+  _unary,
+  _binary_uri,
+  _binary_uris,
+  _binary_string,
+  _multilingual,
+} from '../src/meta';
 import { InvalidMetaValue } from '../src/errors';
 import { isGlobURI, isMatchPattern } from '../src/utils';
 
@@ -134,10 +147,15 @@ describe('run-at', () => {
 
   test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(RUNAT_ENUM[0])));
   test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+
   test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
   test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
-  test('start warn', () => expect(f('document-start', 'warn')).toMatchObject(a('document-start')));
-  test('start error', () => expect(f('document-start', 'error')).toMatchObject(a('document-start')));
+
+  test('valid enum warn', () => expect(f('document-start', 'warn')).toMatchObject(a('document-start')));
+  test('valid enum error', () => expect(f('document-start', 'error')).toMatchObject(a('document-start')));
+
+  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(RUNAT_ENUM[0])));
+  test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
 });
 
 describe('resource', () => {
@@ -241,4 +259,21 @@ describe('globuris', () => {
   for (const [i, good] of Object.entries(goodGlobURIs)) {
     test(`good globuri #${i}`, () => expect(isGlobURI(good)).toBe(true));
   }
+});
+
+describe('sandbox', () => {
+  const f = _binary_enum('sandbox', SANDBOX_ENUM);
+  const a = (v) => answerWrap('sandbox', v);
+
+  test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(SANDBOX_ENUM[0])));
+  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+
+  test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
+  test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
+
+  test('valid enum warn', () => expect(f('raw', 'warn')).toMatchObject(a('raw')));
+  test('valid enum error', () => expect(f('raw', 'error')).toMatchObject(a('raw')));
+
+  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(SANDBOX_ENUM[0])));
+  test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
 });

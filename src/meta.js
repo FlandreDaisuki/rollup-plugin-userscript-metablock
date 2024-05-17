@@ -308,8 +308,23 @@ export const _binary_antifeature = (val, vtor, sm) => {
   }
 };
 
-export const RUNAT_ENUM = ['end', 'start', 'idle', 'body'].map((s) => `document-${s}`).concat('context-menu');
-export const INJECTINTO_ENUM = ['page', 'content', 'auto'];
+export const RUNAT_ENUM = Object.freeze(/** @type {const} */ ([
+  'document-end',
+  'document-start',
+  'document-idle',
+  'document-body',
+  'context-menu',
+]));
+export const INJECTINTO_ENUM = Object.freeze(/** @type {const} */ ([
+  'page',
+  'content',
+  'auto',
+]));
+export const SANDBOX_ENUM = Object.freeze(/** @type {const} */ ([
+  'raw',
+  'JavaScript',
+  'DOM',
+]));
 
 export const BASIC_METAKEY_FUNCS = {
   name: _multilingual('name'),
@@ -411,6 +426,7 @@ export const TM_METAKEY_FUNCS = {
     _validator_tmpl(vtor, `${keyname}'s metavalue should be 'chrome'`);
     return null;
   },
+  sandbox: _binary_enum('sandbox', SANDBOX_ENUM),
 };
 export const TM_METAKEY_NAMES = Object.keys(TM_METAKEY_FUNCS);
 
