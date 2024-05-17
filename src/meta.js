@@ -1,27 +1,27 @@
 import debug from 'debug';
 import semver from 'semver';
-import { UnknownMetakeyToScriptManager, InvalidMetaValue } from './errors.js';
+import { UnknownMetaKeyToScriptManager, InvalidMetaValue } from './errors.js';
 import { isString, isObject, isMatchPattern, print as p, isIPv4, isGlobURI, isUrl } from './utils.js';
 
-export const DEFAULT_METAS = {
+export const DEFAULT_META = {
   name: 'New Script',
   namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
   grant: 'none',
 };
 
-export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
-  debug('meta:getMetaEntry::[metakey, metavalue]')([metakey, metavalue]);
-  const { keynames, keyfuncs } = getMetakeyDataByManager(manager);
+export const getMetaEntry = ([metaKey, metaValue], { validator, manager }) => {
+  debug('meta:getMetaEntry::[metaKey, metaValue]')([metaKey, metaValue]);
+  const { keyNames, keyFunctions } = getMetaKeyDataByManager(manager);
 
-  const mk = metakey.trim();
+  const mk = metaKey.trim();
 
-  let mv = metavalue;
-  if (isString(metavalue)) {
-    mv = metavalue.trim();
-  } else if (Array.isArray(metavalue) && metavalue.length && metavalue.every(isString)) {
-    mv = metavalue.map((v) => v.trim());
-  } else if (isObject(metavalue)) {
-    mv = Object.entries(metavalue)
+  let mv = metaValue;
+  if (isString(metaValue)) {
+    mv = metaValue.trim();
+  } else if (Array.isArray(metaValue) && metaValue.length && metaValue.every(isString)) {
+    mv = metaValue.map((v) => v.trim());
+  } else if (isObject(metaValue)) {
+    mv = Object.entries(metaValue)
       .map(([k, v]) => {
         if (isString(v)) {
           return [k, v.trim()];
@@ -34,17 +34,17 @@ export const getMetaEntry = ([metakey, metavalue], { validator, manager }) => {
       }, {});
   }
 
-  if (!keynames.includes(mk)) {
-    if (validator === 'warn') { p.warn(`The script manager doesn't support metakey: ${mk}`); }
+  if (!keyNames.includes(mk)) {
+    if (validator === 'warn') { p.warn(`The script manager doesn't support metaKey: ${mk}`); }
     if (validator === 'error') {
-      throw new UnknownMetakeyToScriptManager(`The script manager doesn't support metakey: ${mk}`);
+      throw new UnknownMetaKeyToScriptManager(`The script manager doesn't support metaKey: ${mk}`);
     }
     return null;
   }
 
-  const result = keyfuncs[mk](mv, validator, manager);
-  const defmeta = DEFAULT_METAS[mk];
-  return defmeta ? result || [[mk, defmeta]] : result;
+  const result = keyFunctions[mk](mv, validator, manager);
+  const defMeta = DEFAULT_META[mk];
+  return defMeta ? result || [[mk, defMeta]] : result;
 };
 
 const _validator_tmpl = (vtor, msg) => {
@@ -52,270 +52,270 @@ const _validator_tmpl = (vtor, msg) => {
   if (vtor === 'error') { throw new InvalidMetaValue(msg); }
 };
 
-export const _multilingual = (keyname) => (val, vtor) => {
+export const _multilingual = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else if (isObject(val)) {
     if (!val.default) {
-      _validator_tmpl(vtor, `${keyname}.default is required`);
+      _validator_tmpl(vtor, `${keyName}.default is required`);
       return null;
     }
 
-    return Object.entries(val).map(([lang, text]) => [`${keyname}${lang === 'default' ? '' : ':' + lang}`, text]);
+    return Object.entries(val).map(([lang, text]) => [`${keyName}${lang === 'default' ? '' : ':' + lang}`, text]);
   } else {
-    _validator_tmpl(vtor, `${keyname}'s matavalue is an invalid type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue is an invalid type`);
     return null;
   }
 };
 
-export const _binary_string = (keyname) => (val, vtor) => {
+export const _binary_string = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be string type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be string type`);
     return null;
   }
 };
 
-export const _binary_strings = (keyname) => (val, vtor) => {
+export const _binary_strings = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return _binary_string(keyname)(val, vtor);
+    return _binary_string(keyName)(val, vtor);
   } else if (Array.isArray(val)) {
     const goods = val.reduce((prev, curr) => {
-      return prev.concat(_binary_string(keyname)(curr, vtor));
+      return prev.concat(_binary_string(keyName)(curr, vtor));
     }, []).filter(Boolean);
     return goods.length ? goods : null;
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be string or string[] type`);
     return null;
   }
 };
 
-export const _binary_uri = (keyname) => (val, vtor) => {
+export const _binary_uri = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
     if (!isUrl(val)) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid URI`);
+      _validator_tmpl(vtor, `${keyName}'s metaValue should be a valid URI`);
     }
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be string type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be string type`);
     return null;
   }
 };
 
-export const _binary_uris = (keyname) => (val, vtor) => {
+export const _binary_uris = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return _binary_uri(keyname)(val, vtor);
+    return _binary_uri(keyName)(val, vtor);
   } else if (Array.isArray(val)) {
     const goods = val.reduce((prev, curr) => {
-      return prev.concat(_binary_uri(keyname)(curr, vtor));
+      return prev.concat(_binary_uri(keyName)(curr, vtor));
     }, []).filter(Boolean);
     return goods.length ? goods : null;
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be string or string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be string or string[] type`);
     return null;
   }
 };
 
-export const _binary_globuri = (keyname) => (val, vtor) => {
+export const _binary_glob_uri = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
     if (isGlobURI(val)) {
-      return [[keyname, val]];
+      return [[keyName, val]];
     } else {
-      return _binary_uri(keyname)(val, vtor);
+      return _binary_uri(keyName)(val, vtor);
     }
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be globuri string type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be glob uri string type`);
     return null;
   }
 };
 
-export const _binary_globuris = (keyname) => (val, vtor) => {
+export const _binary_glob_uris = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return _binary_globuri(keyname)(val, vtor);
+    return _binary_glob_uri(keyName)(val, vtor);
   } else if (Array.isArray(val)) {
     const goods = val.reduce((prev, curr) => {
-      return prev.concat(_binary_globuri(keyname)(curr, vtor));
+      return prev.concat(_binary_glob_uri(keyName)(curr, vtor));
     }, []).filter(Boolean);
     return goods.length ? goods : null;
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be globuri string or globuri string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be glob uri string or glob uri string[] type`);
     return null;
   }
 };
 
-export const _binary_enum = (keyname, enumset) => (val, vtor) => {
+export const _binary_enum = (keyName, enumSet) => (val, vtor) => {
   if (val === undefined) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be undefined`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be undefined`);
     return null;
   }
-  const _set = new Set(enumset);
+  const _set = new Set(enumSet);
   if (_set.has(val)) {
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else {
-    const setstr = [..._set].join(', ');
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be one of [${setstr}]`);
+    const setStr = [..._set].join(', ');
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be one of [${setStr}]`);
 
     const first = [..._set][0];
     p.warn('Set default value:', first);
-    return [[keyname, first]];
+    return [[keyName, first]];
   }
 };
 
-export const _ternary_uri = (keyname) => (val, vtor) => {
+export const _ternary_uri = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isObject(val)) {
     const entries = Object.entries(val);
-    for (const [rname, uri] of entries) {
+    for (const [rName, uri] of entries) {
       if (!isUrl(String(uri))) {
-        _validator_tmpl(vtor, `${keyname}.${rname} metavalue should be a valid URI`);
+        _validator_tmpl(vtor, `${keyName}.${rName} metaValue should be a valid URI`);
       }
     }
-    return entries.map((entry) => [keyname, ...entry.map(String)]);
+    return entries.map((entry) => [keyName, ...entry.map(String)]);
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be object type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be object type`);
     return null;
   }
 };
 
-export const _binary_version = (keyname) => (val, vtor) => {
+export const _binary_version = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (semver.valid(val)) {
-    return [[keyname, semver.clean(val)]];
+    return [[keyName, semver.clean(val)]];
   }
 
   const coerce = semver.coerce(val);
   if (semver.valid(coerce)) {
-    _validator_tmpl(vtor, `${keyname} can be transform to ${coerce}`);
-    return [[keyname, coerce.version]];
+    _validator_tmpl(vtor, `${keyName} can be transform to ${coerce}`);
+    return [[keyName, coerce.version]];
   } else {
-    _validator_tmpl(vtor, `${keyname}'s matavalue is invalid`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue is invalid`);
     return null;
   }
 };
 
-export const _unary = (keyname) => (val, vtor) => {
+export const _unary = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
-  return val ? [[keyname]] : null;
+  return val ? [[keyName]] : null;
 };
 
-export const _binary_matches = (keyname) => (val, vtor) => {
+export const _binary_matches = (keyName) => (val, vtor) => {
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
     if (!isMatchPattern(val)) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid match pattern string`);
+      _validator_tmpl(vtor, `${keyName}'s metaValue should be a valid match pattern string`);
     }
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else if (Array.isArray(val)) {
     const goods = val.reduce((prev, curr) => {
       if (isString(curr)) {
         if (!isMatchPattern(curr)) {
-          _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid match pattern string`);
+          _validator_tmpl(vtor, `${keyName}'s metaValue should be a valid match pattern string`);
         }
-        return prev.concat([[keyname, curr]]);
+        return prev.concat([[keyName, curr]]);
       }
       return prev;
     }, []).filter(Boolean);
     return goods.length ? goods : null;
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be match pattern string or match pattern string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be match pattern string or match pattern string[] type`);
     return null;
   }
 };
 
 /* eslint-disable-next-line no-unused-vars */
 export const _binary_grant = (val, vtor, sm) => {
-  const keyname = 'grant';
+  const keyName = 'grant';
   if (!val) {
-    return [[keyname, 'none']];
+    return [[keyName, 'none']];
   } else if (isString(val)) {
     // TODO: script manager dependency
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else if (Array.isArray(val) && val.length && val.every(isString)) {
     // TODO: script manager dependency
-    return val.map((v) => [keyname, v]);
+    return val.map((v) => [keyName, v]);
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be ${keyName} string or ${keyName} string[] type`);
     return null;
   }
 };
 
 /* eslint-disable-next-line no-unused-vars */
 export const _binary_antifeature = (val, vtor, sm) => {
-  const keyname = 'antifeature';
+  const keyName = 'antifeature';
   if (!val) {
-    _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
-    return [[keyname, val]];
+    return [[keyName, val]];
   } else if (Array.isArray(val) && val.length && val.every(isString)) {
-    return val.map((v) => [keyname, v]);
+    return val.map((v) => [keyName, v]);
   } else {
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be ${keyName} string or ${keyName} string[] type`);
     return null;
   }
 };
 
-export const RUNAT_ENUM = Object.freeze(/** @type {const} */ ([
+export const RUN_AT_ENUM = Object.freeze(/** @type {const} */ ([
   'document-end',
   'document-start',
   'document-idle',
   'document-body',
   'context-menu',
 ]));
-export const INJECTINTO_ENUM = Object.freeze(/** @type {const} */ ([
+export const INJECT_INTO_ENUM = Object.freeze(/** @type {const} */ ([
   'page',
   'content',
   'auto',
@@ -326,27 +326,27 @@ export const SANDBOX_ENUM = Object.freeze(/** @type {const} */ ([
   'DOM',
 ]));
 
-export const BASIC_METAKEY_FUNCS = {
+export const BASIC_META_KEY_FUNCS = {
   name: _multilingual('name'),
   description: _multilingual('description'),
   namespace: _binary_string('namespace'),
   match: _binary_matches('match'),
-  include: _binary_globuris('include'),
-  exclude: _binary_globuris('exclude'),
+  include: _binary_glob_uris('include'),
+  exclude: _binary_glob_uris('exclude'),
   icon: _binary_uri('icon'),
   require: _binary_uris('require'),
-  'run-at': _binary_enum('run-at', RUNAT_ENUM),
+  'run-at': _binary_enum('run-at', RUN_AT_ENUM),
   resource: _ternary_uri('resource'),
   version: _binary_version('version'),
   noframes: _unary('noframes'),
   grant: _binary_grant,
   antifeature: _binary_antifeature,
 };
-export const BASIC_METAKEY_NAMES = Object.keys(BASIC_METAKEY_FUNCS);
+export const BASIC_META_KEY_NAMES = Object.keys(BASIC_META_KEY_FUNCS);
 
 
-export const GF_METAKEY_FUNCS = {
-  ...BASIC_METAKEY_FUNCS,
+export const GF_META_KEY_FUNCS = {
+  ...BASIC_META_KEY_FUNCS,
   updateURL: _binary_uri('updateURL'),
   installURL: _binary_uri('installURL'),
   downloadURL: _binary_uri('downloadURL'),
@@ -357,11 +357,11 @@ export const GF_METAKEY_FUNCS = {
   compatible: _binary_strings('compatible'),
   incompatible: _binary_strings('incompatible'),
 };
-export const GF_METAKEY_NAMES = Object.keys(GF_METAKEY_FUNCS);
+export const GF_META_KEY_NAMES = Object.keys(GF_META_KEY_FUNCS);
 
 
-export const TM_METAKEY_FUNCS = {
-  ...GF_METAKEY_FUNCS,
+export const TM_META_KEY_FUNCS = {
+  ...GF_META_KEY_FUNCS,
   author: _binary_string('author'),
 
   /**
@@ -386,129 +386,129 @@ export const TM_METAKEY_FUNCS = {
   supportURL: _binary_uri('supportURL'),
 
   connect: (val, vtor) => {
-    const keyname = 'connect';
+    const keyName = 'connect';
     const isValidConnect = (v) => isIPv4(v) || isUrl(v) || /[\w-]+(\.[\w-]+)+/.test(v) || v === '*' || v === 'localhost';
     if (!val) {
-      _validator_tmpl(vtor, `${keyname}'s metavalue can't be falsy`);
+      _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
       return null;
     }
 
     if (isString(val)) {
       if (!isValidConnect(val)) {
-        _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+        _validator_tmpl(vtor, `${keyName}'s metaValue should be a valid connect string`);
       }
-      return [[keyname, val]];
+      return [[keyName, val]];
     } else if (Array.isArray(val) && val.length && val.every(isString)) {
       const goods = val.reduce((prev, curr) => {
         if (isString(curr)) {
           if (!isValidConnect(curr)) {
-            _validator_tmpl(vtor, `${keyname}'s metavalue should be a valid connect string`);
+            _validator_tmpl(vtor, `${keyName}'s metaValue should be a valid connect string`);
           }
-          return prev.concat([[keyname, curr]]);
+          return prev.concat([[keyName, curr]]);
         }
         return prev;
       }, []).filter(Boolean);
       return goods.length ? goods : null;
     } else {
-      _validator_tmpl(vtor, `${keyname}'s metavalue should be ${keyname} string or ${keyname} string[] type`);
+      _validator_tmpl(vtor, `${keyName}'s metaValue should be ${keyName} string or ${keyName} string[] type`);
       return null;
     }
   },
   // ['unwrap'](){},
   nocompat: (val, vtor) => {
-    const keyname = 'nocompat';
+    const keyName = 'nocompat';
     if (!val) {
       return null;
     }
     if (/chrome/i.test(val)) {
-      return [[keyname, 'Chrome']];
+      return [[keyName, 'Chrome']];
     }
-    _validator_tmpl(vtor, `${keyname}'s metavalue should be 'chrome'`);
+    _validator_tmpl(vtor, `${keyName}'s metaValue should be 'chrome'`);
     return null;
   },
   sandbox: _binary_enum('sandbox', SANDBOX_ENUM),
 };
-export const TM_METAKEY_NAMES = Object.keys(TM_METAKEY_FUNCS);
+export const TM_META_KEY_NAMES = Object.keys(TM_META_KEY_FUNCS);
 
 
-export const GM3_METAKEY_FUNCS = {
-  ...GF_METAKEY_FUNCS,
+export const GM3_META_KEY_FUNCS = {
+  ...GF_META_KEY_FUNCS,
   author: _binary_string('author'),
   installURL: _binary_uri('installURL'),
   downloadURL: _binary_uri('downloadURL'),
   homepageURL: _binary_uri('homepageURL'),
   updateURL: _binary_uri('updateURL'),
 };
-export const GM3_METAKEY_NAMES = Object.keys(GM3_METAKEY_FUNCS);
+export const GM3_META_KEY_NAMES = Object.keys(GM3_META_KEY_FUNCS);
 
 
-export const GM4_METAKEY_FUNCS = { ...GF_METAKEY_FUNCS };
-export const GM4_METAKEY_NAMES = Object.keys(GM4_METAKEY_FUNCS);
+export const GM4_META_KEY_FUNCS = { ...GF_META_KEY_FUNCS };
+export const GM4_META_KEY_NAMES = Object.keys(GM4_META_KEY_FUNCS);
 
 
-export const VM_METAKEY_FUNCS = {
-  ...GF_METAKEY_FUNCS,
+export const VM_META_KEY_FUNCS = {
+  ...GF_META_KEY_FUNCS,
   'exclude-match': _binary_matches('exclude-match'),
-  'inject-into': _binary_enum('inject-into', INJECTINTO_ENUM),
+  'inject-into': _binary_enum('inject-into', INJECT_INTO_ENUM),
 };
-export const VM_METAKEY_NAMES = Object.keys(VM_METAKEY_FUNCS);
+export const VM_META_KEY_NAMES = Object.keys(VM_META_KEY_FUNCS);
 
-export const ALL_METAKEY_FUNCS = {
-  ...TM_METAKEY_FUNCS,
-  ...GM3_METAKEY_FUNCS,
-  ...VM_METAKEY_FUNCS,
+export const ALL_META_KEY_FUNCS = {
+  ...TM_META_KEY_FUNCS,
+  ...GM3_META_KEY_FUNCS,
+  ...VM_META_KEY_FUNCS,
 };
-export const ALL_METAKEY_NAMES = [...new Set(Object.keys(ALL_METAKEY_FUNCS))];
+export const ALL_META_KEY_NAMES = [...new Set(Object.keys(ALL_META_KEY_FUNCS))];
 
 
-export const isValidMetakeyName = (keyname, { manager = 'ALL' } = {}) => {
+export const isValidMetaKeyName = (keyName, { manager = 'ALL' } = {}) => {
   switch (manager) {
   case 'ALL':
-    return ALL_METAKEY_NAMES.includes(keyname);
+    return ALL_META_KEY_NAMES.includes(keyName);
   case 'TM':
-    return TM_METAKEY_NAMES.includes(keyname);
+    return TM_META_KEY_NAMES.includes(keyName);
   case 'GM3':
-    return GM3_METAKEY_NAMES.includes(keyname);
+    return GM3_META_KEY_NAMES.includes(keyName);
   case 'GM4':
-    return GM4_METAKEY_NAMES.includes(keyname);
+    return GM4_META_KEY_NAMES.includes(keyName);
   case 'VM':
-    return VM_METAKEY_NAMES.includes(keyname);
+    return VM_META_KEY_NAMES.includes(keyName);
   default:
     return false;
   }
 };
 
-export const getMetakeyDataByManager = (manager) => {
+export const getMetaKeyDataByManager = (manager) => {
   switch (manager) {
   case 'ALL':
     return {
-      keynames: ALL_METAKEY_NAMES,
-      keyfuncs: ALL_METAKEY_FUNCS,
+      keyNames: ALL_META_KEY_NAMES,
+      keyFunctions: ALL_META_KEY_FUNCS,
     };
   case 'TM':
     return {
-      keynames: TM_METAKEY_NAMES,
-      keyfuncs: TM_METAKEY_FUNCS,
+      keyNames: TM_META_KEY_NAMES,
+      keyFunctions: TM_META_KEY_FUNCS,
     };
   case 'GM3':
     return {
-      keynames: GM3_METAKEY_NAMES,
-      keyfuncs: GM3_METAKEY_FUNCS,
+      keyNames: GM3_META_KEY_NAMES,
+      keyFunctions: GM3_META_KEY_FUNCS,
     };
   case 'GM4':
     return {
-      keynames: GM4_METAKEY_NAMES,
-      keyfuncs: GM4_METAKEY_FUNCS,
+      keyNames: GM4_META_KEY_NAMES,
+      keyFunctions: GM4_META_KEY_FUNCS,
     };
   case 'VM':
     return {
-      keynames: VM_METAKEY_NAMES,
-      keyfuncs: VM_METAKEY_FUNCS,
+      keyNames: VM_META_KEY_NAMES,
+      keyFunctions: VM_META_KEY_FUNCS,
     };
   default:
     return {
-      keynames: [],
-      keyfuncs: {},
+      keyNames: [],
+      keyFunctions: {},
     };
   }
 };

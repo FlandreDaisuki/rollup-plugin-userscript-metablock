@@ -1,45 +1,45 @@
 import debug from 'debug';
 import MagicString from 'magic-string';
 import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } from './options.js';
-import { isValidMetakeyName, getMetaEntry } from './meta.js';
-import { jclone, isObject } from './utils.js';
+import { isValidMetaKeyName, getMetaEntry } from './meta.js';
+import { jsonClone, isObject } from './utils.js';
 
 const parseOptions = async(options) => {
   debug('plugin:parseOptions::raw options')(options);
 
   const conf = {
-    metakeys: await loadFile(options.file),
+    metaKeys: await loadFile(options.file),
     manager: getScriptManager(options.manager),
     validator: getValidator(options.validator),
   };
 
   // options.override
-  const override = jclone(isObject(options.override) ? options.override : '{}');
+  const override = jsonClone(isObject(options.override) ? options.override : {});
 
   if (override) {
-    Object.assign(conf.metakeys, override);
+    Object.assign(conf.metaKeys, override);
   }
 
   // remove invalid keys
-  conf.metakeys = Object.keys(conf.metakeys).reduce((collect, key) => {
-    if (isValidMetakeyName(key)) {
-      collect[key] = conf.metakeys[key];
+  conf.metaKeys = Object.keys(conf.metaKeys).reduce((collect, key) => {
+    if (isValidMetaKeyName(key)) {
+      collect[key] = conf.metaKeys[key];
     }
     return collect;
   }, {});
 
-  // order metakeys
+  // order metaKeys
   const order = getValidOrder(options.order);
   debug('plugin:parseOptions::order')(order);
-  conf.metakeys = sortbyOrder(conf.metakeys, order);
+  conf.metaKeys = sortbyOrder(conf.metaKeys, order);
 
   return conf;
 };
 
 const transformAll = (conf) => {
   const entries = [];
-  for (const [metakey, metavalue] of Object.entries(conf.metakeys)) {
-    const info = getMetaEntry([metakey, metavalue], conf);
+  for (const [metaKey, metaValue] of Object.entries(conf.metaKeys)) {
+    const info = getMetaEntry([metaKey, metaValue], conf);
     if (info) {
       entries.push(...info);
     }

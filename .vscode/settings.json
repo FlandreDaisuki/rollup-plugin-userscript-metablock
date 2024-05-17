@@ -13,11 +13,13 @@
     "antifeature",
     "defaulticon",
     "metablock",
-    "metakey",
-    "metakeys",
     "nocompat",
     "noframes",
-    "rollup"
+    "rollup",
+    "tmpl",
+    "trusy",
+    "violentmonkey",
+    "vtor"
   ],
   "cSpell.ignorePaths": [
     "dist/*",

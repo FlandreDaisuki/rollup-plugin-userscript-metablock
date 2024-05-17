@@ -26,7 +26,7 @@ describe('options:file', () => {
     expect(() => loadFile('not_exist.json')).rejects.toThrow(FileNotFound);
   });
 
-  test('unsupport format', () => {
+  test('unsupported format', () => {
     expect(() => loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.ini'))).rejects.toThrow(UnsupportedFormat);
   });
 
@@ -49,7 +49,7 @@ describe('options:file', () => {
 
 describe('options:order', async() => {
   test('getValidOrder()', () => {
-    expect(getValidOrder(['name', '...', 'not-metakeys', '...', 'grant', 'name:zh-TW']))
+    expect(getValidOrder(['name', '...', 'not-meta-keys', '...', 'grant', 'name:zh-TW']))
       .toMatchObject(['name', 'description', 'namespace', '...', 'grant']);
   });
 

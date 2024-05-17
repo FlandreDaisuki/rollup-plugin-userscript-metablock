@@ -2,8 +2,8 @@ import { expect } from 'vitest';
 import { describe, test } from 'vitest';
 import {
   getMetaEntry,
-  DEFAULT_METAS,
-  RUNAT_ENUM,
+  DEFAULT_META,
+  RUN_AT_ENUM,
   SANDBOX_ENUM,
   _binary_enum,
   _ternary_uri,
@@ -24,13 +24,13 @@ const answerWrap = (k, v) => [].concat(v).map((u) => [k, u]);
 describe('getMetaEntry', () => {
   const f = (k, v) => getMetaEntry([k, v], { validator: 'warn', manager: 'ALL' });
 
-  test('name default', () => expect(f('name', null)).toMatchObject(answerWrap('name', DEFAULT_METAS.name)));
+  test('name default', () => expect(f('name', null)).toMatchObject(answerWrap('name', DEFAULT_META.name)));
   test('name feature', () => expect(f('name', 'Hello, world')).toMatchObject(answerWrap('name', 'Hello, world')));
   test('nullable', () => expect(f('description', null), null));
   test('space', () => expect(f('description', ' '), null));
-  test('namespace default', () => expect(f('namespace', null)).toMatchObject(answerWrap('namespace', DEFAULT_METAS.namespace)));
+  test('namespace default', () => expect(f('namespace', null)).toMatchObject(answerWrap('namespace', DEFAULT_META.namespace)));
   test('namespace feature', () => expect(f('namespace', 'Hello, world')).toMatchObject(answerWrap('namespace', 'Hello, world')));
-  test('grant default', () => expect(f('grant', null)).toMatchObject(answerWrap('grant', DEFAULT_METAS.grant)));
+  test('grant default', () => expect(f('grant', null)).toMatchObject(answerWrap('grant', DEFAULT_META.grant)));
   test('grant feature', () => expect(f('grant', 'GM_getValue')).toMatchObject(answerWrap('grant', 'GM_getValue')));
 });
 
@@ -142,10 +142,10 @@ describe('require (binary uris)', () => {
 });
 
 describe('run-at', () => {
-  const f = _binary_enum('run-at', RUNAT_ENUM);
+  const f = _binary_enum('run-at', RUN_AT_ENUM);
   const a = (v) => answerWrap('run-at', v);
 
-  test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(RUNAT_ENUM[0])));
+  test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(RUN_AT_ENUM[0])));
   test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
 
   test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
@@ -154,7 +154,7 @@ describe('run-at', () => {
   test('valid enum warn', () => expect(f('document-start', 'warn')).toMatchObject(a('document-start')));
   test('valid enum error', () => expect(f('document-start', 'error')).toMatchObject(a('document-start')));
 
-  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(RUNAT_ENUM[0])));
+  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(RUN_AT_ENUM[0])));
   test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
 });
 
@@ -170,8 +170,8 @@ describe('resource', () => {
   test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
   test('bad-type warn', () => expect(f('bad-type', 'warn')).toBe(null));
   test('bad-type error', () => expect(() => f('bad-type', 'error')).toThrow(InvalidMetaValue));
-  test('bad-metavalue warn', () => expect(f({ 'bad-metavalue': 42 }, 'warn')).toEqual([['resource', 'bad-metavalue', '42']]));
-  test('bad-metavalue error', () => expect(() => f({ 'bad-metavalue': 42 }, 'error')).toThrow(InvalidMetaValue));
+  test('unknown meta value warn', () => expect(f({ 'unknown meta value': 42 }, 'warn')).toEqual([['resource', 'unknown meta value', '42']]));
+  test('unknown meta value error', () => expect(() => f({ 'unknown meta value': 42 }, 'error')).toThrow(InvalidMetaValue));
   test('{} warn', () => expect(f({}, 'warn')).toEqual([]));
   test('{} error', () => expect(f({}, 'error')).toEqual([]));
   test('good warn', () => expect(f(good, 'warn')).toEqual(goodAnswer));
@@ -186,8 +186,8 @@ describe('version', () => {
   test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
   test('coerce warn', () => expect(f('1', 'warn')).toMatchObject(a('1.0.0')));
   test('coerce error', () => expect(() => f('1', 'error')).toThrow(InvalidMetaValue));
-  test('bad-metavalue warn', () => expect(f('hello.world', 'warn')).toBe(null));
-  test('bad-metavalue error', () => expect(() => f('hello.world', 'error')).toThrow(InvalidMetaValue));
+  test('unknown meta value warn', () => expect(f('hello.world', 'warn')).toBe(null));
+  test('unknown meta value error', () => expect(() => f('hello.world', 'error')).toThrow(InvalidMetaValue));
   test('good warn', () => expect(f('1.2.3', 'warn')).toMatchObject(a('1.2.3')));
   test('good error', () => expect(f('1.2.3', 'error')).toMatchObject(a('1.2.3')));
 });
@@ -234,11 +234,11 @@ describe('match patterns', () => {
   }
 });
 
-describe('globuris', () => {
+describe('glob uris', () => {
   const badGlobURIs = [null, ' '];
 
   for (const [i, bad] of Object.entries(badGlobURIs)) {
-    test(`bad globuri #${i}`, () => expect(isGlobURI(bad)).toBe(false));
+    test(`bad glob uri #${i}`, () => expect(isGlobURI(bad)).toBe(false));
   }
 
   const goodGlobURIs = [
@@ -257,7 +257,7 @@ describe('globuris', () => {
   ];
 
   for (const [i, good] of Object.entries(goodGlobURIs)) {
-    test(`good globuri #${i}`, () => expect(isGlobURI(good)).toBe(true));
+    test(`good glob uri #${i}`, () => expect(isGlobURI(good)).toBe(true));
   }
 });
 
