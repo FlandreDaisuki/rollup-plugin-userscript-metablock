@@ -418,7 +418,6 @@ export const TM_META_KEY_FUNCS = {
       return null;
     }
   },
-  // ['unwrap'](){},
   nocompat: (val, vtor) => {
     const keyName = 'nocompat';
     if (!val) {
@@ -431,6 +430,7 @@ export const TM_META_KEY_FUNCS = {
     return null;
   },
   sandbox: _binary_enum('sandbox', SANDBOX_ENUM),
+  unwrap: _unary('unwrap'),
 };
 export const TM_META_KEY_NAMES = Object.keys(TM_META_KEY_FUNCS);
 
@@ -454,6 +454,7 @@ export const VM_META_KEY_FUNCS = {
   ...GF_META_KEY_FUNCS,
   'exclude-match': _binary_matches('exclude-match'),
   'inject-into': _binary_enum('inject-into', INJECT_INTO_ENUM),
+  unwrap: _unary('unwrap'),
 };
 export const VM_META_KEY_NAMES = Object.keys(VM_META_KEY_FUNCS);
 

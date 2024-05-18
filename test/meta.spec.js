@@ -200,8 +200,24 @@ describe('noframes (unary)', () => {
 
   test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
   test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+
   test('trusy warn', () => expect(f(42, 'warn')).toMatchObject(a));
   test('trusy error', () => expect(f(42, 'error')).toMatchObject(a));
+
+  test('good warn', () => expect(f(true, 'warn')).toMatchObject(a));
+  test('good error', () => expect(f(true, 'error')).toMatchObject(a));
+});
+
+describe('unwrap (unary)', () => {
+  const f = _unary('unwrap');
+  const a = [['unwrap']];
+
+  test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
+  test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+
+  test('trusy warn', () => expect(f(42, 'warn')).toMatchObject(a));
+  test('trusy error', () => expect(f(42, 'error')).toMatchObject(a));
+
   test('good warn', () => expect(f(true, 'warn')).toMatchObject(a));
   test('good error', () => expect(f(true, 'error')).toMatchObject(a));
 });
