@@ -1,6 +1,6 @@
 # Supported Metakeys & Metavalues
 
-- [Supported Metakeys & Metavalues](#supported-metakeys--metavalues)
+- [Supported Metakeys \& Metavalues](#supported-metakeys--metavalues)
   - [Basic Matas](#basic-matas)
     - [name](#name)
     - [description](#description)
@@ -16,6 +16,7 @@
     - [noframes](#noframes)
     - [grant](#grant)
     - [antifeature](#antifeature)
+    - [sandbox](#sandbox)
 
 ## Basic Matas
 
@@ -243,12 +244,18 @@ If value is not valid **RUNAT-ENUM**, set to default value.
 
 | attr | value | description |
 |:-:|:-:|:-:|
-| type | `String` ||
+| type | `String` | valid **ANTIFEATURE-ENUM** |
 | example | `'ads'` ||
 | type | `String[]` ||
 | example | [antifeature-array-example](#antifeature-array-example) |  |
 |exception| `InvalidMetaValue` | invalid **API** by _manager_ in `String` type |
 |exception| `InvalidMetaValue` | include invalid **API** by _manager_ in `String[]` type |
+
+**SANDBOX-ENUM**:
+
+- `'ads'`
+- `'tracking'`
+- `'miner'`
 
 #### antifeature-array-example
 
@@ -258,3 +265,19 @@ If value is not valid **RUNAT-ENUM**, set to default value.
   'miner'
 ]
 ```
+
+### sandbox
+
+(only tm support)
+
+| attr | value | description |
+|:-:|:-:|:-:|
+| type | `String` | valid **SANDBOX-ENUM** |
+| example | `'raw'` ||
+|exception| `InvalidMetaValue` | invalid **API** by _manager_ in `String` type |
+
+**SANDBOX-ENUM**:
+
+- `'raw'`
+- `'JavaScript'`
+- `'DOM'`

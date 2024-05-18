@@ -7,7 +7,7 @@ export const isUrl = (s) => {
     return false;
   }
 };
-export const jclone = (o) => JSON.parse(JSON.stringify(o));
+export const jsonClone = (o) => JSON.parse(JSON.stringify(o));
 export const isString = (v) => typeof(v) === 'string';
 export const isObject = (v) => typeof(v) === 'object' && v !== null;
 export const isMatchPattern = (s) => /^([*]|https?|file|ftp):\/\/([*]|(?:\*\.)?[^*/]*)\/.*$/u.test(s);

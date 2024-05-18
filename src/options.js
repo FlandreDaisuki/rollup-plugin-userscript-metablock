@@ -2,12 +2,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import debug from 'debug';
 import YAML from 'js-yaml';
-import { jclone } from './utils.js';
-import { isValidMetakeyName, DEFAULT_METAS } from './meta.js';
+import { jsonClone } from './utils.js';
+import { isValidMetaKeyName, DEFAULT_META } from './meta.js';
 import { FileNotFound, UnsupportedFormat, UnknownScriptManager } from './errors.js';
 
 
-export const SIMPLEST_META = jclone(DEFAULT_METAS);
+export const SIMPLEST_META = jsonClone(DEFAULT_META);
 
 export const DEFAULT_ORDER = [
   'name',
@@ -117,7 +117,7 @@ export const getValidator = (vtor) => {
 };
 
 export const getValidOrder = (order = []) => {
-  const _order = jclone(order);
+  const _order = jsonClone(order);
 
   const i = _order.indexOf('...');
   if (i >= 0) {
@@ -129,7 +129,7 @@ export const getValidOrder = (order = []) => {
   const orderSet = new Set(_order);
   const cloned = [...orderSet];
   for (const key of cloned) {
-    if (key !== '...' && !isValidMetakeyName(key)) {
+    if (key !== '...' && !isValidMetaKeyName(key)) {
       orderSet.delete(key);
     }
   }
@@ -144,10 +144,10 @@ export const getSpecialIndexWithOrder = (order) => (key) => {
   return (ki >= 0) ? ki - i : 0;
 };
 
-export const sortbyOrder = (metakeys, order) => {
-  const mkeys = jclone(metakeys);
+export const sortbyOrder = (metaKeys, order) => {
+  const mKeys = jsonClone(metaKeys);
   const getSpecialIndex = getSpecialIndexWithOrder(order);
-  const mkEntries = Object.entries(mkeys).sort((a, b) => {
+  const mkEntries = Object.entries(mKeys).sort((a, b) => {
     return getSpecialIndex(a[0]) - getSpecialIndex(b[0]);
   });
 

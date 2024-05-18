@@ -26,7 +26,7 @@ Override metakeys to all priority.
 You can consider this will work as below:
 
 ```js
-Object.assign({}, simplestMata, fromFileMeta, overrideMeta);
+Object.assign({}, simplestMeta, fromFileMeta, overrideMeta);
 ```
 
 | attr | value | description |
