@@ -5,6 +5,7 @@ import {
   DEFAULT_META,
   RUN_AT_ENUM,
   SANDBOX_ENUM,
+  ANTIFEATURE_ENUM,
   _binary_enum,
   _ternary_uri,
   _binary_version,
@@ -12,6 +13,7 @@ import {
   _binary_uri,
   _binary_uris,
   _binary_string,
+  _binary_strings,
   _multilingual,
 } from '../src/meta';
 import { InvalidMetaValue } from '../src/errors';
@@ -276,4 +278,30 @@ describe('sandbox', () => {
 
   test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(SANDBOX_ENUM[0])));
   test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
+});
+
+describe('antifeature', () => {
+  const f = _binary_strings('antifeature', {
+    message: (keyName) => `${keyName}'s metaValue should be one of [${ANTIFEATURE_ENUM.join(', ')}]`,
+    apply: (v) => ANTIFEATURE_ENUM.includes(v),
+  });
+  const a = (v) => answerWrap('antifeature', v);
+
+  test('null warn', () => expect(f(null, 'warn')).toBe(null));
+  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+
+  test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
+  test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
+
+  test('valid enum warn', () => expect(f('ads', 'warn')).toMatchObject(a('ads')));
+  test('valid enum error', () => expect(f('ads', 'error')).toMatchObject(a('ads')));
+
+  test('valid enums warn', () => expect(f(['ads', 'miner'], 'warn')).toMatchObject(a(['ads', 'miner'])));
+  test('valid enums error', () => expect(f(['ads', 'miner'], 'error')).toMatchObject(a(['ads', 'miner'])));
+
+  test('invalid enum warn', () => expect(f('virus', 'warn')).toMatchObject(a('virus')));
+  test('invalid enum error', () => expect(() => f('virus', 'error')).toThrow(InvalidMetaValue));
+
+  test('invalid enums warn', () => expect(f(['ads', 'virus'], 'warn')).toMatchObject(a(['ads', 'virus'])));
+  test('invalid enums error', () => expect(() => f(['ads', 'virus'], 'error')).toThrow(InvalidMetaValue));
 });

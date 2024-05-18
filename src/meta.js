@@ -87,19 +87,33 @@ export const _binary_string = (keyName) => (val, vtor) => {
   }
 };
 
-export const _binary_strings = (keyName) => (val, vtor) => {
+const DEFAULT_RESTRICTION = {
+  message: (keyName) => `${keyName}'s metaValue should pass its restriction`,
+  apply: () => true,
+};
+export const _binary_strings = (keyName, restriction = DEFAULT_RESTRICTION) => (val, vtor) => {
   if (!val) {
     _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
     return null;
   }
 
   if (isString(val)) {
+    if (!restriction.apply(val)) {
+      _validator_tmpl(vtor, restriction.message(keyName));
+    }
     return _binary_string(keyName)(val, vtor);
   } else if (Array.isArray(val)) {
-    const goods = val.reduce((prev, curr) => {
-      return prev.concat(_binary_string(keyName)(curr, vtor));
-    }, []).filter(Boolean);
-    return goods.length ? goods : null;
+    const goods = [];
+    for (const item of val) {
+      const metaKeyFunc = _binary_string(keyName)(item, vtor);
+      if (!restriction.apply(item)) {
+        _validator_tmpl(vtor, restriction.message(keyName));
+      }
+      if (metaKeyFunc) {
+        goods.push(metaKeyFunc);
+      }
+    }
+    return goods.length ? goods.flat() : null;
   } else {
     _validator_tmpl(vtor, `${keyName}'s metaValue should be string or string[] type`);
     return null;
@@ -290,24 +304,6 @@ export const _binary_grant = (val, vtor, sm) => {
   }
 };
 
-/* eslint-disable-next-line no-unused-vars */
-export const _binary_antifeature = (val, vtor, sm) => {
-  const keyName = 'antifeature';
-  if (!val) {
-    _validator_tmpl(vtor, `${keyName}'s metaValue can't be falsy`);
-    return null;
-  }
-
-  if (isString(val)) {
-    return [[keyName, val]];
-  } else if (Array.isArray(val) && val.length && val.every(isString)) {
-    return val.map((v) => [keyName, v]);
-  } else {
-    _validator_tmpl(vtor, `${keyName}'s metaValue should be ${keyName} string or ${keyName} string[] type`);
-    return null;
-  }
-};
-
 export const RUN_AT_ENUM = Object.freeze(/** @type {const} */ ([
   'document-end',
   'document-start',
@@ -325,6 +321,11 @@ export const SANDBOX_ENUM = Object.freeze(/** @type {const} */ ([
   'JavaScript',
   'DOM',
 ]));
+export const ANTIFEATURE_ENUM = Object.freeze(/** @type {const} */ ([
+  'ads',
+  'tracking',
+  'miner',
+]));
 
 export const BASIC_META_KEY_FUNCS = {
   name: _multilingual('name'),
@@ -340,7 +341,10 @@ export const BASIC_META_KEY_FUNCS = {
   version: _binary_version('version'),
   noframes: _unary('noframes'),
   grant: _binary_grant,
-  antifeature: _binary_antifeature,
+  antifeature: _binary_strings('antifeature', {
+    message: (keyName) => `${keyName}'s metaValue should be one of [${ANTIFEATURE_ENUM.join(', ')}]`,
+    apply: (v) => ANTIFEATURE_ENUM.includes(v),
+  }),
 };
 export const BASIC_META_KEY_NAMES = Object.keys(BASIC_META_KEY_FUNCS);
 

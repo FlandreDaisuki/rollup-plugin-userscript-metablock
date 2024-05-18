@@ -244,12 +244,18 @@ If value is not valid **RUNAT-ENUM**, set to default value.
 
 | attr | value | description |
 |:-:|:-:|:-:|
-| type | `String` ||
+| type | `String` | valid **ANTIFEATURE-ENUM** |
 | example | `'ads'` ||
 | type | `String[]` ||
 | example | [antifeature-array-example](#antifeature-array-example) |  |
 |exception| `InvalidMetaValue` | invalid **API** by _manager_ in `String` type |
 |exception| `InvalidMetaValue` | include invalid **API** by _manager_ in `String[]` type |
+
+**SANDBOX-ENUM**:
+
+- `'ads'`
+- `'tracking'`
+- `'miner'`
 
 #### antifeature-array-example
 
