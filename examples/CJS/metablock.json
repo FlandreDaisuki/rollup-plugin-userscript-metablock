@@ -1,0 +1,14 @@
+{
+  "name": "Hello, world",
+  "namespace": "https://www.example.com/",
+  "version": "1.0",
+  "include": "*://*.example.*",
+  "match": ["*://*/*", "https://*.abc.com/*"],
+  "grant": ["GM_setValue", "GM_getValue"],
+  "resource": {
+    "xml": "https://abc.com/example.xml",
+    "main.css": "https://abc.com/main.css"
+  },
+  "noframes": true,
+  "run-at": "document-start"
+}

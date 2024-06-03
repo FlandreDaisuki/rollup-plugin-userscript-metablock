@@ -15,7 +15,7 @@ export default [{
     terser(),
   ],
   output: [{
-    file: 'dist/rollup-plugin-userscript-metablock.common.js',
+    file: 'dist/rollup-plugin-userscript-metablock.cjs',
     format: 'cjs',
     exports: 'default',
   }],
@@ -29,7 +29,7 @@ export default [{
     terser(),
   ],
   output: [{
-    file: 'dist/rollup-plugin-userscript-metablock.esm.js',
+    file: 'dist/rollup-plugin-userscript-metablock.mjs',
     format: 'esm',
   }],
 }];

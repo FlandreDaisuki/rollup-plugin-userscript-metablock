@@ -1,4 +1,4 @@
-import metablock from '../../src/index.js';
+import metablock from 'rollup-plugin-userscript-metablock';
 
 process.chdir(import.meta.dirname);
 
