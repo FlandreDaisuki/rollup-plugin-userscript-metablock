@@ -1,14 +1,14 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Transform config file to userscript metablock and append on",
   "types": "types/rollup-plugin-userscript-metablock.d.ts",
-  "module": "dist/rollup-plugin-userscript-metablock.esm.js",
-  "main": "dist/rollup-plugin-userscript-metablock.common.js",
+  "module": "dist/rollup-plugin-userscript-metablock.mjs",
+  "main": "dist/rollup-plugin-userscript-metablock.cjs",
   "exports": {
     "types": "./types/rollup-plugin-userscript-metablock.d.ts",
-    "import": "./dist/rollup-plugin-userscript-metablock.esm.js",
-    "require": "./dist/rollup-plugin-userscript-metablock.common.js"
+    "import": "./dist/rollup-plugin-userscript-metablock.mjs",
+    "require": "./dist/rollup-plugin-userscript-metablock.cjs"
   },
   "type": "module",
   "scripts": {
