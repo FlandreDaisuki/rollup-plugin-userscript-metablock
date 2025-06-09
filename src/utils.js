@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import picocolors from 'picocolors';
 
 export const isUrl = (s) => {
   try {
@@ -22,5 +22,5 @@ const noop = () => {};
 const isTestEnv = process.env.NODE_ENV === 'test';
 
 export const print = {
-  warn: !isTestEnv ? console.warn.bind(console, chalk.yellow('⚠')) : noop,
+  warn: !isTestEnv ? console.warn.bind(console, picocolors.yellow('⚠')) : noop,
 };
