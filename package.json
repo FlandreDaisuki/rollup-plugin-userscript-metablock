@@ -33,7 +33,7 @@
     "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
     "@types/semver": "^7.5.8",
-    "eslint": "^8.57.0",
+    "eslint": "^9.26.0",
     "rollup": "^4.17.2",
     "vitest": "^1.6.0"
   },
