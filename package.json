@@ -1,21 +1,12 @@
 {
   "name": "rollup-plugin-userscript-metablock",
-  "version": "0.4.3",
-  "description": "Transform config file to userscript metablock and append on",
-  "types": "types/rollup-plugin-userscript-metablock.d.ts",
-  "module": "dist/rollup-plugin-userscript-metablock.mjs",
-  "main": "dist/rollup-plugin-userscript-metablock.cjs",
-  "exports": {
-    "types": "./types/rollup-plugin-userscript-metablock.d.ts",
-    "import": "./dist/rollup-plugin-userscript-metablock.mjs",
-    "require": "./dist/rollup-plugin-userscript-metablock.cjs"
-  },
   "type": "module",
-  "scripts": {
-    "test": "vitest",
-    "build": "rollup -c",
-    "prepublish": "vitest run && npm run build && node npm-scripts/publish.js"
-  },
+  "version": "0.4.3",
+  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72",
+  "description": "Transform config file to userscript metablock and append on",
+  "author": "FlandreDaisuki <vbnm123c@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock.git"
@@ -23,20 +14,19 @@
   "bugs": {
     "url": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock/issues"
   },
-  "homepage": "https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock#readme",
-  "author": "FlandreDaisuki <vbnm123c@gmail.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.3",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-terser": "^1.0.0",
-    "@types/debug": "^4.1.12",
-    "@types/js-yaml": "^4.0.9",
-    "@types/semver": "^7.5.8",
-    "eslint": "^8.57.0",
-    "rollup": "^4.17.2",
-    "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+  "exports": {
+    "types": "./types/rollup-plugin-userscript-metablock.d.ts",
+    "import": "./dist/rollup-plugin-userscript-metablock.mjs",
+    "require": "./dist/rollup-plugin-userscript-metablock.cjs"
+  },
+  "main": "dist/rollup-plugin-userscript-metablock.cjs",
+  "module": "dist/rollup-plugin-userscript-metablock.mjs",
+  "types": "types/rollup-plugin-userscript-metablock.d.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "vitest",
+    "build": "rollup -c",
+    "prepublish": "vitest run && npm run build && node npm-scripts/publish.js"
   },
   "dependencies": {
     "debug": "^4.4.3",
@@ -45,5 +35,17 @@
     "picocolors": "^1.1.1",
     "semver": "^7.8.2"
   },
-  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72"
+  "devDependencies": {
+    "@flandredaisuki/eslint-config": "^1.0.1",
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@types/debug": "^4.1.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/semver": "^7.5.8",
+    "eslint": "^10.8.0",
+    "rollup": "^4.17.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
 }
