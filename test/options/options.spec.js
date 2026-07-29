@@ -1,4 +1,3 @@
-
 import fs from 'fs/promises';
 import path from 'path';
 import { loadFile, SIMPLEST_META, getValidOrder, getSpecialIndexWithOrder, sortbyOrder } from '../../src/options';
@@ -18,36 +17,36 @@ describe('options:file', () => {
     namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
   });
 
-  test('null/empty', async() => {
+  test('null/empty', async () => {
     await expect(loadFile(null)).resolves.toMatchObject(SIMPLEST_META);
     await expect(loadFile('')).resolves.toMatchObject(SIMPLEST_META);
   });
-  test('not exists', async() => {
+  test('not exists', async () => {
     await expect(loadFile('not_exist.json')).rejects.toThrow(FileNotFound);
   });
 
-  test('unsupported format', async() => {
+  test('unsupported format', async () => {
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.ini'))).rejects.toThrow(UnsupportedFormat);
   });
 
-  test('json', async() => {
+  test('json', async () => {
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.json'))).resolves.toMatchObject(ref);
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.json'))).rejects.toThrow(Error);
   });
 
-  test('js', async() => {
+  test('js', async () => {
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.js'))).resolves.toMatchObject(ref);
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.esm.js'))).resolves.toMatchObject(ref);
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.js'))).rejects.toThrow(Error);
   });
 
-  test('yaml', async() => {
+  test('yaml', async () => {
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.yaml'))).resolves.toMatchObject(ref);
     await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.yaml'))).rejects.toThrow(YAMLException);
   });
 });
 
-describe('options:order', async() => {
+describe('options:order', async () => {
   test('getValidOrder()', () => {
     expect(getValidOrder(['name', '...', 'not-meta-keys', '...', 'grant', 'name:zh-TW']))
       .toMatchObject(['name', 'description', 'namespace', '...', 'grant']);

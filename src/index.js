@@ -4,7 +4,7 @@ import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } 
 import { isValidMetaKeyName, getMetaEntry } from './meta.js';
 import { jsonClone, isObject } from './utils.js';
 
-const parseOptions = async(options) => {
+const parseOptions = async (options) => {
   debug('plugin:parseOptions::raw options')(options);
 
   const conf = {
@@ -58,9 +58,11 @@ const renderAll = (entries) => {
     const first = entry[0];
     if (/^name(:.*)?$/.test(first)) {
       counter.name = Math.max(counter.name, first.length);
-    } else if (/^description(:.*)?$/.test(first)) {
+    }
+    else if (/^description(:.*)?$/.test(first)) {
       counter.desc = Math.max(counter.desc, first.length);
-    } else {
+    }
+    else {
       counter.other = Math.max(counter.other, first.length);
     }
   }
@@ -69,17 +71,19 @@ const renderAll = (entries) => {
   const _desc = counter.desc === 'description'.length;
   if (_name && _desc) {
     counter.name
-    = counter.desc
-    = counter.other
-    = Math.max(counter.name, counter.desc, counter.other);
-  } else if (_name) {
+      = counter.desc
+        = counter.other
+          = Math.max(counter.name, counter.desc, counter.other);
+  }
+  else if (_name) {
     counter.name
-    = counter.other
-    = Math.max(counter.name, counter.other);
-  } else if (_desc) {
+      = counter.other
+        = Math.max(counter.name, counter.other);
+  }
+  else if (_desc) {
     counter.desc
-    = counter.other
-    = Math.max(counter.desc, counter.other);
+      = counter.other
+        = Math.max(counter.desc, counter.other);
   }
 
   const lines = [];
@@ -88,9 +92,11 @@ const renderAll = (entries) => {
     const first = entry[0];
     if (/^name(:.*)?$/.test(first)) {
       lines.push(`// @${first.padEnd(counter.name, ' ')} ${entry[1]}`);
-    } else if (/^description(:.*)?$/.test(first)) {
+    }
+    else if (/^description(:.*)?$/.test(first)) {
       lines.push(`// @${first.padEnd(counter.desc, ' ')} ${entry[1]}`);
-    } else {
+    }
+    else {
       lines.push(`// @${first.padEnd(counter.other, ' ')} ${entry.slice(1).join(' ')}`);
     }
   }
@@ -112,7 +118,7 @@ export default async function metablock(options = {}) {
   return {
     renderChunk(code, renderedChunk, outputOptions) {
       const magicString = new MagicString(code);
-      magicString.prepend(final + '\n\n').trimEnd('\\n');
+      magicString.prepend(`${final}\n\n`).trimEnd('\\n');
       const result = { code: magicString.toString() };
       if (outputOptions.sourcemap !== false) {
         result.map = magicString.generateMap({ hires: true });

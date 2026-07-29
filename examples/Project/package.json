@@ -1,7 +1,7 @@
 {
   "name": "rollup-plugin-userscript-metablock-examples-project",
-  "version": "1.0.0",
   "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "build": "rollup -c"
   },

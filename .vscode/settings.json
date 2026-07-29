@@ -6,7 +6,7 @@
   "[json]": {
     "editor.quickSuggestions": {
       "strings": true
-    },
+    }
   },
   "eslint.experimental.useFlatConfig": false,
   "cSpell.words": [

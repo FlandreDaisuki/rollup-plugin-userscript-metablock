@@ -5,7 +5,7 @@ import { rollup } from 'rollup';
 import metablock from '../../src/index';
 import { expect } from 'vitest';
 
-test('simplest', async() => {
+test('simplest', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'simplest');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -13,7 +13,7 @@ test('simplest', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.json'),
+        file: path.resolve(testCaseDir, './metablock.json'),
       }),
     ],
   });
@@ -25,7 +25,7 @@ test('simplest', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('yaml', async() => {
+test('yaml', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'yaml');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -33,7 +33,7 @@ test('yaml', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.yaml'),
+        file: path.resolve(testCaseDir, './metablock.yaml'),
       }),
     ],
   });
@@ -45,7 +45,7 @@ test('yaml', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('override', async() => {
+test('override', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'override');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -53,9 +53,9 @@ test('override', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.yaml'),
-        'override': {
-          'name': '我的第一個腳本',
+        file: path.resolve(testCaseDir, './metablock.yaml'),
+        override: {
+          name: '我的第一個腳本',
         },
       }),
     ],
@@ -68,7 +68,7 @@ test('override', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('metablock.cjs', async() => {
+test('metablock.cjs', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'metablock.cjs');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -76,12 +76,10 @@ test('metablock.cjs', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.cjs'),
+        file: path.resolve(testCaseDir, './metablock.cjs'),
       }),
     ],
   });
-
-
 
   const bundleOut = await bundle.generate({
     format: 'esm',
@@ -90,7 +88,7 @@ test('metablock.cjs', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('metablock.mjs', async() => {
+test('metablock.mjs', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'metablock.mjs');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -98,12 +96,10 @@ test('metablock.mjs', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.mjs'),
+        file: path.resolve(testCaseDir, './metablock.mjs'),
       }),
     ],
   });
-
-
 
   const bundleOut = await bundle.generate({
     format: 'esm',
@@ -112,8 +108,7 @@ test('metablock.mjs', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-
-test('order1', async() => {
+test('order1', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'order1');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -121,8 +116,8 @@ test('order1', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.yaml'),
-        'order': [
+        file: path.resolve(testCaseDir, './metablock.yaml'),
+        order: [
           'grant',
         ],
       }),
@@ -136,7 +131,7 @@ test('order1', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('order2', async() => {
+test('order2', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'order2');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -144,8 +139,8 @@ test('order2', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.yaml'),
-        'order': [
+        file: path.resolve(testCaseDir, './metablock.yaml'),
+        order: [
           'version',
           '...',
           'grant',
@@ -162,7 +157,7 @@ test('order2', async() => {
   expect(bundleOut.output[0].code).toBe(answerText);
 });
 
-test('order3', async() => {
+test('order3', async () => {
   const testCaseDir = path.resolve(import.meta.dirname, 'order3');
   const answerText = await readFile(path.resolve(testCaseDir, 'answer.txt'), 'utf8');
 
@@ -170,8 +165,8 @@ test('order3', async() => {
     input: path.resolve(import.meta.dirname, 'main.js'),
     plugins: [
       metablock({
-        'file': path.resolve(testCaseDir, './metablock.yaml'),
-        'order': [
+        file: path.resolve(testCaseDir, './metablock.yaml'),
+        order: [
           '...',
         ],
       }),
@@ -184,4 +179,3 @@ test('order3', async() => {
 
   expect(bundleOut.output[0].code).toBe(answerText);
 });
-

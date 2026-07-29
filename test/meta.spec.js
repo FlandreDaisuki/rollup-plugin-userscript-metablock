@@ -50,13 +50,13 @@ describe('multilingual', () => {
   test('good string error', () => expect(f(goodStr, 'error')).toMatchObject(a(goodStr)));
 
   const badObj = { en: 'my script' };
-  test('bad object warn', () => expect(f(badObj, 'warn')).toBe( null));
-  test('bad object error', () => expect(() => f(badObj, 'error')).toThrow( InvalidMetaValue));
+  test('bad object warn', () => expect(f(badObj, 'warn')).toBe(null));
+  test('bad object error', () => expect(() => f(badObj, 'error')).toThrow(InvalidMetaValue));
 
   const goodObj = { en: 'my script', default: 'my script' };
   const goodObjAns = [['name:en', 'my script'], ['name', 'my script']];
-  test('good object warn', () => expect(f(goodObj, 'warn')).toMatchObject( goodObjAns));
-  test('good object error', () => expect(f(goodObj, 'error')).toMatchObject( goodObjAns));
+  test('good object warn', () => expect(f(goodObj, 'warn')).toMatchObject(goodObjAns));
+  test('good object error', () => expect(f(goodObj, 'error')).toMatchObject(goodObjAns));
 });
 
 describe('namespace', () => {
@@ -110,7 +110,7 @@ describe('require (binary uris)', () => {
 
   test('null warn', () => expect(f(null, 'warn')).toBe(null));
   test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('bad-type warn', () =>  expect(f(42, 'warn')).toBe(null));
+  test('bad-type warn', () => expect(f(42, 'warn')).toBe(null));
   test('bad-type error', () => expect(() => f(42, 'error')).toThrow(InvalidMetaValue));
 
   const bads = [

@@ -3,13 +3,14 @@ import picocolors from 'picocolors';
 export const isUrl = (s) => {
   try {
     return Boolean(new URL(s));
-  } catch {
+  }
+  catch {
     return false;
   }
 };
 export const jsonClone = (o) => JSON.parse(JSON.stringify(o));
-export const isString = (v) => typeof(v) === 'string';
-export const isObject = (v) => typeof(v) === 'object' && v !== null;
+export const isString = (v) => typeof (v) === 'string';
+export const isObject = (v) => typeof (v) === 'object' && v !== null;
 export const isMatchPattern = (s) => /^([*]|https?|file|ftp):\/\/([*]|(?:\*\.)?[^*/]*)\/.*$/u.test(s);
 export const isGlobURI = (s) => (/^\/.*\/$/).test(s) || Boolean(isUrl(s)) || (isString(s) && s.includes('*'));
 export const isIPv4 = (s) => {
