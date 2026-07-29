@@ -1,0 +1,75 @@
+name: Update license
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: update-license-master
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        # aka actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Update license
+        env:
+          COPYRIGHT_HOLDER: FlandreDaisuki
+          COPYRIGHT_EMAIL: github@flandre.tw
+        run: bash scripts/update-license.sh
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASE_BRANCH: master
+        run: |
+          if git diff --quiet -- LICENSE; then
+            echo "License is already current."
+            exit 0
+          fi
+
+          current_year=$(date -u +%Y)
+          update_branch="automation/license-${current_year}"
+          open_pr=$(gh pr list \
+            --head "$update_branch" \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number')
+
+          if [[ -n $open_pr ]]; then
+            echo "Pull request #${open_pr} already contains this year's update."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$update_branch"
+          git add LICENSE
+          git commit -m "docs(license): update copyright year"
+
+          if git ls-remote --exit-code --heads origin "$update_branch" >/dev/null; then
+            git fetch --force origin \
+              "$update_branch:refs/remotes/origin/$update_branch"
+          fi
+
+          git push --force-with-lease --set-upstream origin "HEAD:$update_branch"
+          gh pr create \
+            --base "$BASE_BRANCH" \
+            --head "$update_branch" \
+            --title "docs(license): update copyright year" \
+            --body "Keeps the LICENSE copyright notice current. This pull request was created automatically."
