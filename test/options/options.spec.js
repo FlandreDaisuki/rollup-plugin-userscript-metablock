@@ -1,76 +1,116 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { loadFile, SIMPLEST_META, getValidOrder, getSpecialIndexWithOrder, sortbyOrder } from '../../src/options';
-import { FileNotFound, UnsupportedFormat } from '../../src/errors';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { YAMLException } from 'js-yaml';
-import { describe, test, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
+import {
+  SIMPLEST_META,
+  getSpecialIndexWithOrder,
+  getValidOrder,
+  loadFile,
+  sortbyOrder,
+} from '../../src/options.js';
+import { FileNotFound, UnsupportedFormat } from '../../src/errors.js';
 
-describe('options:file', () => {
-  const ref = Object.freeze({
-    name: 'test',
-    description: 'This is a test',
-    include: [
-      'http://*',
-      'https://*',
-    ],
-    grant: 'none',
-    namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
+const fixturePath = (...segments) => path.resolve(import.meta.dirname, ...segments);
+const readJsonFixture = (...segments) => JSON.parse(
+  readFileSync(fixturePath(...segments), 'utf8'),
+);
+
+const expectedMetadata = Object.freeze({
+  name: 'test',
+  description: 'This is a test',
+  include: [
+    'http://*',
+    'https://*',
+  ],
+  grant: 'none',
+  namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
+});
+
+const orderIndexCases = readJsonFixture('order/orderIndex.json');
+const specialIndexCases = orderIndexCases.flatMap(
+  ({ order, orderIndex }, caseIndex) => Object.entries(orderIndex)
+    .map(([key, expected]) => ({
+      name: `case ${caseIndex + 1}, key "${key}"`,
+      order,
+      key,
+      expected,
+    })),
+);
+const sortCases = readJsonFixture('order/order.json');
+
+describe('loadFile', () => {
+  test.each([
+    { name: 'null', value: null },
+    { name: 'an empty string', value: '' },
+  ])('returns default metadata for $name', async ({ value }) => {
+    await expect(loadFile(value)).resolves.toEqual(SIMPLEST_META);
   });
 
-  test('null/empty', async () => {
-    await expect(loadFile(null)).resolves.toMatchObject(SIMPLEST_META);
-    await expect(loadFile('')).resolves.toMatchObject(SIMPLEST_META);
-  });
-  test('not exists', async () => {
+  test('throws when the file does not exist', async () => {
     await expect(loadFile('not_exist.json')).rejects.toThrow(FileNotFound);
   });
 
-  test('unsupported format', async () => {
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.ini'))).rejects.toThrow(UnsupportedFormat);
+  test('throws for an unsupported file extension', async () => {
+    await expect(loadFile(fixturePath('file/invalid/meta.ini')))
+      .rejects.toThrow(UnsupportedFormat);
   });
 
-  test('json', async () => {
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.json'))).resolves.toMatchObject(ref);
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.json'))).rejects.toThrow(Error);
+  test.each([
+    { name: 'JSON', file: 'meta.json' },
+    { name: 'CommonJS', file: 'meta.js' },
+    { name: 'an ES module', file: 'meta.esm.js' },
+    { name: 'YAML', file: 'meta.yaml' },
+  ])('loads metadata from $name', async ({ file }) => {
+    await expect(loadFile(fixturePath('file/valid', file)))
+      .resolves.toEqual(expectedMetadata);
   });
 
-  test('js', async () => {
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.js'))).resolves.toMatchObject(ref);
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.esm.js'))).resolves.toMatchObject(ref);
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.js'))).rejects.toThrow(Error);
+  test('throws for malformed JSON', async () => {
+    await expect(loadFile(fixturePath('file/invalid/meta.json')))
+      .rejects.toThrow(SyntaxError);
   });
 
-  test('yaml', async () => {
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.yaml'))).resolves.toMatchObject(ref);
-    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.yaml'))).rejects.toThrow(YAMLException);
+  test('throws when a JavaScript module has no exports', async () => {
+    await expect(loadFile(fixturePath('file/invalid/meta.js')))
+      .rejects.toThrow(/Can't find any key export/);
+  });
+
+  test('throws for malformed YAML', async () => {
+    await expect(loadFile(fixturePath('file/invalid/meta.yaml')))
+      .rejects.toThrow(YAMLException);
   });
 });
 
-describe('options:order', async () => {
-  test('getValidOrder()', () => {
-    expect(getValidOrder(['name', '...', 'not-meta-keys', '...', 'grant', 'name:zh-TW']))
-      .toMatchObject(['name', 'description', 'namespace', '...', 'grant']);
+describe('metadata ordering', () => {
+  test('normalizes an order and removes unsupported or duplicate keys', () => {
+    expect(getValidOrder([
+      'name',
+      '...',
+      'not-meta-keys',
+      '...',
+      'grant',
+      'name:zh-TW',
+    ])).toEqual([
+      'name',
+      'description',
+      'namespace',
+      '...',
+      'grant',
+    ]);
   });
 
-  const orderIndexJson = await fs.readFile(path.resolve(import.meta.dirname, 'order/orderIndex.json'));
-  const orderIndexList = JSON.parse(orderIndexJson);
+  test.each(specialIndexCases)(
+    'calculates the relative index for $name',
+    ({ order, key, expected }) => {
+      expect(getSpecialIndexWithOrder(order)(key)).toBe(expected);
+    },
+  );
 
-  for (const [idxOfTestCase, testCase] of Object.entries(orderIndexList)) {
-    const getSpecialIndex = getSpecialIndexWithOrder(testCase.order);
-
-    test(`order index #${idxOfTestCase}`, () => {
-      for (const [k, v] of Object.entries(testCase.orderIndex)) {
-        expect(getSpecialIndex(k)).toBe(v);
-      }
-    });
-  }
-
-  const orderJson = await fs.readFile(path.resolve(import.meta.dirname, 'order/order.json'));
-  const orderList = JSON.parse(orderJson);
-
-  for (const [idxOfTestCase, testCase] of Object.entries(orderList)) {
-    test(`sort by order #${idxOfTestCase}`, () => {
-      expect(sortbyOrder(testCase.before, testCase.order)).toMatchObject(testCase.after);
-    });
-  }
+  test.each(sortCases.map((testCase, index) => ({
+    name: `case ${index + 1}`,
+    ...testCase,
+  })))('sorts metadata for $name', ({ before, order, after }) => {
+    expect(sortbyOrder(before, order)).toEqual(after);
+  });
 });

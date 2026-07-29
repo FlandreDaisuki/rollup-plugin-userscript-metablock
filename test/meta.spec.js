@@ -1,323 +1,442 @@
-import { expect } from 'vitest';
-import { describe, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import {
-  getMetaEntry,
+  ANTIFEATURE_ENUM,
   DEFAULT_META,
   RUN_AT_ENUM,
   SANDBOX_ENUM,
-  ANTIFEATURE_ENUM,
   _binary_enum,
-  _ternary_uri,
-  _binary_version,
-  _unary,
-  _binary_uri,
-  _binary_uris,
   _binary_string,
   _binary_strings,
+  _binary_uri,
+  _binary_uris,
+  _binary_version,
   _multilingual,
-} from '../src/meta';
-import { InvalidMetaValue } from '../src/errors';
-import { isGlobURI, isMatchPattern } from '../src/utils';
+  _ternary_uri,
+  _unary,
+  getMetaEntry,
+} from '../src/meta.js';
+import { InvalidMetaValue } from '../src/errors.js';
+import { isGlobURI, isMatchPattern } from '../src/utils.js';
 
-// FIXME: These tests should be more readable Q_Q
-
-const answerWrap = (k, v) => [].concat(v).map((u) => [k, u]);
+const entriesFor = (key, values) => [].concat(values).map((value) => [key, value]);
 
 describe('getMetaEntry', () => {
-  const f = (k, v) => getMetaEntry([k, v], { validator: 'warn', manager: 'ALL' });
+  const getEntry = (key, value) => getMetaEntry(
+    [key, value],
+    { validator: 'warn', manager: 'ALL' },
+  );
 
-  test('name default', () => expect(f('name', null)).toMatchObject(answerWrap('name', DEFAULT_META.name)));
-  test('name feature', () => expect(f('name', 'Hello, world')).toMatchObject(answerWrap('name', 'Hello, world')));
-  test('nullable', () => expect(f('description', null), null));
-  test('space', () => expect(f('description', ' '), null));
-  test('namespace default', () => expect(f('namespace', null)).toMatchObject(answerWrap('namespace', DEFAULT_META.namespace)));
-  test('namespace feature', () => expect(f('namespace', 'Hello, world')).toMatchObject(answerWrap('namespace', 'Hello, world')));
-  test('grant default', () => expect(f('grant', null)).toMatchObject(answerWrap('grant', DEFAULT_META.grant)));
-  test('grant feature', () => expect(f('grant', 'GM_getValue')).toMatchObject(answerWrap('grant', 'GM_getValue')));
+  test.each([
+    {
+      name: 'uses the default name when it is missing',
+      key: 'name',
+      value: null,
+      expected: entriesFor('name', DEFAULT_META.name),
+    },
+    {
+      name: 'uses a provided name',
+      key: 'name',
+      value: 'Hello, world',
+      expected: entriesFor('name', 'Hello, world'),
+    },
+    {
+      name: 'omits a missing optional description',
+      key: 'description',
+      value: null,
+      expected: null,
+    },
+    {
+      name: 'omits a blank optional description',
+      key: 'description',
+      value: ' ',
+      expected: null,
+    },
+    {
+      name: 'uses the default namespace when it is missing',
+      key: 'namespace',
+      value: null,
+      expected: entriesFor('namespace', DEFAULT_META.namespace),
+    },
+    {
+      name: 'uses a provided namespace',
+      key: 'namespace',
+      value: 'Hello, world',
+      expected: entriesFor('namespace', 'Hello, world'),
+    },
+    {
+      name: 'uses the default grant when it is missing',
+      key: 'grant',
+      value: null,
+      expected: entriesFor('grant', DEFAULT_META.grant),
+    },
+    {
+      name: 'uses a provided grant',
+      key: 'grant',
+      value: 'GM_getValue',
+      expected: entriesFor('grant', 'GM_getValue'),
+    },
+  ])('$name', ({ key, value, expected }) => {
+    expect(getEntry(key, value)).toEqual(expected);
+  });
 });
 
-describe('multilingual', () => {
-  const f = _multilingual('name');
-  const a = (v) => answerWrap('name', v);
+describe('multilingual metadata', () => {
+  const parseName = _multilingual('name');
 
-  test('null warn', () => expect(f(null, 'warn')).toBe(null));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('bad-type warn', () => expect(f(42, 'warn')).toBe(null));
-  test('bad-type error', () => expect(() => f(42, 'error')).toThrow(InvalidMetaValue));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'an unsupported value type', value: 42 },
+    { name: 'an object without a default translation', value: { en: 'my script' } },
+  ])('returns null for $name in warn mode', ({ value }) => {
+    expect(parseName(value, 'warn')).toBeNull();
+  });
 
-  const goodStr = 'my script';
-  test('good string warn', () => expect(f(goodStr, 'warn')).toMatchObject(a(goodStr)));
-  test('good string error', () => expect(f(goodStr, 'error')).toMatchObject(a(goodStr)));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'an unsupported value type', value: 42 },
+    { name: 'an object without a default translation', value: { en: 'my script' } },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseName(value, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  const badObj = { en: 'my script' };
-  test('bad object warn', () => expect(f(badObj, 'warn')).toBe(null));
-  test('bad object error', () => expect(() => f(badObj, 'error')).toThrow(InvalidMetaValue));
+  test.each(['warn', 'error'])('accepts a string in %s mode', (validator) => {
+    expect(parseName('my script', validator)).toEqual(entriesFor('name', 'my script'));
+  });
 
-  const goodObj = { en: 'my script', default: 'my script' };
-  const goodObjAns = [['name:en', 'my script'], ['name', 'my script']];
-  test('good object warn', () => expect(f(goodObj, 'warn')).toMatchObject(goodObjAns));
-  test('good object error', () => expect(f(goodObj, 'error')).toMatchObject(goodObjAns));
+  test.each(['warn', 'error'])('expands translations in %s mode', (validator) => {
+    expect(parseName(
+      { en: 'my script', default: 'my script' },
+      validator,
+    )).toEqual([
+      ['name:en', 'my script'],
+      ['name', 'my script'],
+    ]);
+  });
 });
 
-describe('namespace', () => {
-  const f = _binary_string('namespace');
-  const a = (v) => answerWrap('namespace', v);
+describe('string metadata', () => {
+  const parseNamespace = _binary_string('namespace');
 
-  const good = 'My namespace';
-  test('null warn', () => expect(f(null, 'warn')).toBe(null));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+  ])('returns null for $name in warn mode', ({ value }) => {
+    expect(parseNamespace(value, 'warn')).toBeNull();
+  });
 
-  test('bad-type warn', () => expect(f(42, 'warn')).toBe(null));
-  test('bad-type error', () => expect(() => f(42, 'error')).toThrow(InvalidMetaValue));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseNamespace(value, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  test('good warn', () => expect(f(good, 'warn')).toMatchObject(a(good)));
-  test('good error', () => expect(f(good, 'error')).toMatchObject(a(good)));
+  test.each(['warn', 'error'])('accepts a string in %s mode', (validator) => {
+    expect(parseNamespace('My namespace', validator))
+      .toEqual(entriesFor('namespace', 'My namespace'));
+  });
 });
 
-describe('icon (binary uri)', () => {
-  const f = _binary_uri('icon');
-  const a = (v) => answerWrap('icon', v);
+describe('URI metadata', () => {
+  const parseIcon = _binary_uri('icon');
 
-  test('null warn', () => expect(f(null, 'warn')).toBe(null));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('bad-type warn', () => expect(f(42, 'warn')).toBe(null));
-  test('bad-type error', () => expect(() => f(42, 'error')).toThrow(InvalidMetaValue));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+  ])('returns null for $name in warn mode', ({ value }) => {
+    expect(parseIcon(value, 'warn')).toBeNull();
+  });
 
-  const bads = [
-    'http',
-  ];
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseIcon(value, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  for (const [i, bad] of Object.entries(bads)) {
-    test(`bad-uri warn ${i}`, () => expect(f(bad, 'warn')).toMatchObject(a(bad)));
-    test(`bad-uri error ${i}`, () => expect(() => f(bad, 'error')).toThrow(InvalidMetaValue));
-  }
+  test('retains an invalid URI in warn mode', () => {
+    expect(parseIcon('http', 'warn')).toEqual(entriesFor('icon', 'http'));
+  });
 
-  const goods = [
-    'http://example.com/',
-    'https://example.com/favicon.ico',
-    'data:image/gif;base64,R0lGODdhMAAwAPAAAAAAAP///ywAAAAAMAAwAAAC8IyPqcvt3wCcDkiLc7C0qwyGHhSWpjQu5yqmCYsapyuvUUlvONmOZtfzgFzByTB10QgxOR0TqBQejhRNzOfkVJ+5YiUqrXF5Y5lKh/DeuNcP5yLWGsEbtLiOSpa/TPg7JpJHxyendzWTBfX0cxOnKPjgBzi4diinWGdkF8kjdfnycQZXZeYGejmJlZeGl9i2icVqaNVailT6F5iJ90m6mvuTS4OK05M0vDk0Q4XUtwvKOzrcd3iq9uisF81M1OIcR7lEewwcLp7tuNNkM3uNna3F2JQFo97Vriy/Xl4/f1cf5VWzXyym7PHhhx4dbgYKAAA7',
-  ];
+  test('throws for an invalid URI in error mode', () => {
+    expect(() => parseIcon('http', 'error')).toThrow(InvalidMetaValue);
+  });
 
-  for (const [i, good] of Object.entries(goods)) {
-    test(`good-uri warn ${i}`, () => expect(f(good, 'warn')).toMatchObject(a(good)));
-    test(`good-uri error ${i}`, () => expect(f(good, 'error')).toMatchObject(a(good)));
-  }
+  test.each([
+    { name: 'HTTP URL', value: 'http://example.com/' },
+    { name: 'HTTPS URL', value: 'https://example.com/favicon.ico' },
+    {
+      name: 'data URL',
+      value: 'data:image/gif;base64,R0lGODdhMAAwAPAAAAAAAP///ywAAAAAMAAwAAAC8IyPqcvt3wCcDkiLc7C0qwyGHhSWpjQu5yqmCYsapyuvUUlvONmOZtfzgFzByTB10QgxOR0TqBQejhRNzOfkVJ+5YiUqrXF5Y5lKh/DeuNcP5yLWGsEbtLiOSpa/TPg7JpJHxyendzWTBfX0cxOnKPjgBzi4diinWGdkF8kjdfnycQZXZeYGejmJlZeGl9i2icVqaNVailT6F5iJ90m6mvuTS4OK05M0vDk0Q4XUtwvKOzrcd3iq9uisF81M1OIcR7lEewwcLp7tuNNkM3uNna3F2JQFo97Vriy/Xl4/f1cf5VWzXyym7PHhhx4dbgYKAAA7',
+    },
+  ])('accepts a $name', ({ value }) => {
+    expect(parseIcon(value, 'error')).toEqual(entriesFor('icon', value));
+  });
 });
 
-describe('require (binary uris)', () => {
-  const f = _binary_uris('require');
-  const a = (v) => answerWrap('require', v);
+describe('URI-list metadata', () => {
+  const parseRequire = _binary_uris('require');
 
-  test('null warn', () => expect(f(null, 'warn')).toBe(null));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('bad-type warn', () => expect(f(42, 'warn')).toBe(null));
-  test('bad-type error', () => expect(() => f(42, 'error')).toThrow(InvalidMetaValue));
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+  ])('returns null for $name in warn mode', ({ value }) => {
+    expect(parseRequire(value, 'warn')).toBeNull();
+  });
 
-  const bads = [
-    'http',
-    ['https', 'http'],
-  ];
+  test.each([
+    { name: 'a missing value', value: null },
+    { name: 'a non-string value', value: 42 },
+    { name: 'an invalid URI', value: 'http' },
+    { name: 'multiple invalid URIs', value: ['https', 'http'] },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseRequire(value, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  for (const [i, bad] of Object.entries(bads)) {
-    test(`bad-uri warn ${i}`, () => expect(f(bad, 'warn')).toMatchObject(a(bad)));
-    test(`bad-uri error ${i}`, () => expect(() => f(bad, 'error')).toThrow(InvalidMetaValue));
-  }
+  test.each([
+    { name: 'HTTP URL', value: 'http://example.com/' },
+    { name: 'HTTPS URL', value: 'https://example.com/favicon.ico' },
+    {
+      name: 'data URL',
+      value: 'data:image/gif;base64,R0lGODdhMAAwAPAAAAAAAP///ywAAAAAMAAwAAAC8IyPqcvt3wCcDkiLc7C0qwyGHhSWpjQu5yqmCYsapyuvUUlvONmOZtfzgFzByTB10QgxOR0TqBQejhRNzOfkVJ+5YiUqrXF5Y5lKh/DeuNcP5yLWGsEbtLiOSpa/TPg7JpJHxyendzWTBfX0cxOnKPjgBzi4diinWGdkF8kjdfnycQZXZeYGejmJlZeGl9i2icVqaNVailT6F5iJ90m6mvuTS4OK05M0vDk0Q4XUtwvKOzrcd3iq9uisF81M1OIcR7lEewwcLp7tuNNkM3uNna3F2JQFo97Vriy/Xl4/f1cf5VWzXyym7PHhhx4dbgYKAAA7',
+    },
+    {
+      name: 'URL array',
+      value: ['http://example.com/', 'https://example.com/favicon.ico'],
+    },
+  ])('accepts a $name', ({ value }) => {
+    expect(parseRequire(value, 'error')).toEqual(entriesFor('require', value));
+  });
 
-  const goods = [
-    'http://example.com/',
-    'https://example.com/favicon.ico',
-    'data:image/gif;base64,R0lGODdhMAAwAPAAAAAAAP///ywAAAAAMAAwAAAC8IyPqcvt3wCcDkiLc7C0qwyGHhSWpjQu5yqmCYsapyuvUUlvONmOZtfzgFzByTB10QgxOR0TqBQejhRNzOfkVJ+5YiUqrXF5Y5lKh/DeuNcP5yLWGsEbtLiOSpa/TPg7JpJHxyendzWTBfX0cxOnKPjgBzi4diinWGdkF8kjdfnycQZXZeYGejmJlZeGl9i2icVqaNVailT6F5iJ90m6mvuTS4OK05M0vDk0Q4XUtwvKOzrcd3iq9uisF81M1OIcR7lEewwcLp7tuNNkM3uNna3F2JQFo97Vriy/Xl4/f1cf5VWzXyym7PHhhx4dbgYKAAA7',
-    [
-      'http://example.com/',
-      'https://example.com/favicon.ico',
-    ],
-  ];
+  test('retains invalid entries in warn mode', () => {
+    const values = ['http://example.com/', 'http'];
 
-  for (const [i, good] of Object.entries(goods)) {
-    test(`good-uri warn ${i}`, () => expect(f(good, 'warn')).toMatchObject(a(good)));
-    test(`good-uri error ${i}`, () => expect(f(good, 'error')).toMatchObject(a(good)));
-  }
-
-  const partial = ['http://example.com/', 'http'];
-  test('partial-uri warn', () => expect(f(partial, 'warn')).toMatchObject(a(partial)));
-  test('partial-uri error', () => expect(() => f(partial, 'error')).toThrow(InvalidMetaValue));
+    expect(parseRequire(values, 'warn')).toEqual(entriesFor('require', values));
+  });
 });
 
-describe('run-at', () => {
-  const f = _binary_enum('run-at', RUN_AT_ENUM);
-  const a = (v) => answerWrap('run-at', v);
+describe.each([
+  { key: 'run-at', values: RUN_AT_ENUM, validValue: 'document-start' },
+  { key: 'sandbox', values: SANDBOX_ENUM, validValue: 'raw' },
+])('$key enum metadata', ({ key, values, validValue }) => {
+  const parseEnum = _binary_enum(key, values);
+  const defaultEntry = entriesFor(key, values[0]);
 
-  test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(RUN_AT_ENUM[0])));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+  test('uses the first enum value for null in warn mode', () => {
+    expect(parseEnum(null, 'warn')).toEqual(defaultEntry);
+  });
 
-  test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
-  test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
+  test('throws for null in error mode', () => {
+    expect(() => parseEnum(null, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  test('valid enum warn', () => expect(f('document-start', 'warn')).toMatchObject(a('document-start')));
-  test('valid enum error', () => expect(f('document-start', 'error')).toMatchObject(a('document-start')));
+  test('returns null for undefined in warn mode', () => {
+    expect(parseEnum(undefined, 'warn')).toBeNull();
+  });
 
-  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(RUN_AT_ENUM[0])));
-  test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
+  test('throws for undefined in error mode', () => {
+    expect(() => parseEnum(undefined, 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test.each(['warn', 'error'])('accepts an enum member in %s mode', (validator) => {
+    expect(parseEnum(validValue, validator)).toEqual(entriesFor(key, validValue));
+  });
+
+  test('uses the first enum value for an invalid member in warn mode', () => {
+    expect(parseEnum('hello', 'warn')).toEqual(defaultEntry);
+  });
+
+  test('throws for an invalid member in error mode', () => {
+    expect(() => parseEnum('hello', 'error')).toThrow(InvalidMetaValue);
+  });
 });
 
-describe('resource', () => {
-  const f = _ternary_uri('resource');
-  const good = {
+describe('resource metadata', () => {
+  const parseResource = _ternary_uri('resource');
+  const resources = {
     csv: 'https://my.data/data.csv',
     bgm: 'https://my.data/bgm.mp3',
   };
-  const goodAnswer = Object.entries(good).map((v) => ['resource', ...v]);
+  const expectedResources = Object.entries(resources)
+    .map((entry) => ['resource', ...entry]);
 
-  test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
-  test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('bad-type warn', () => expect(f('bad-type', 'warn')).toBe(null));
-  test('bad-type error', () => expect(() => f('bad-type', 'error')).toThrow(InvalidMetaValue));
-  test('unknown meta value warn', () => expect(f({ 'unknown meta value': 42 }, 'warn')).toEqual([['resource', 'unknown meta value', '42']]));
-  test('unknown meta value error', () => expect(() => f({ 'unknown meta value': 42 }, 'error')).toThrow(InvalidMetaValue));
-  test('{} warn', () => expect(f({}, 'warn')).toEqual([]));
-  test('{} error', () => expect(f({}, 'error')).toEqual([]));
-  test('good warn', () => expect(f(good, 'warn')).toEqual(goodAnswer));
-  test('good error', () => expect(f(good, 'error')).toEqual(goodAnswer));
-});
-
-describe('version', () => {
-  const f = _binary_version('version');
-  const a = (v) => answerWrap('version', v);
-
-  test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
-  test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-  test('coerce warn', () => expect(f('1', 'warn')).toMatchObject(a('1.0.0')));
-  test('coerce error', () => expect(() => f('1', 'error')).toThrow(InvalidMetaValue));
-  test('unknown meta value warn', () => expect(f('hello.world', 'warn')).toBe(null));
-  test('unknown meta value error', () => expect(() => f('hello.world', 'error')).toThrow(InvalidMetaValue));
-  test('good warn', () => expect(f('1.2.3', 'warn')).toMatchObject(a('1.2.3')));
-  test('good error', () => expect(f('1.2.3', 'error')).toMatchObject(a('1.2.3')));
-});
-
-describe('noframes (unary)', () => {
-  const f = _unary('noframes');
-  const a = [['noframes']];
-
-  test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
-  test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-
-  test('trusy warn', () => expect(f(42, 'warn')).toMatchObject(a));
-  test('trusy error', () => expect(f(42, 'error')).toMatchObject(a));
-
-  test('good warn', () => expect(f(true, 'warn')).toMatchObject(a));
-  test('good error', () => expect(f(true, 'error')).toMatchObject(a));
-});
-
-describe('unwrap (unary)', () => {
-  const f = _unary('unwrap');
-  const a = [['unwrap']];
-
-  test('falsy warn', () => expect(f(null, 'warn')).toBe(null));
-  test('falsy error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-
-  test('trusy warn', () => expect(f(42, 'warn')).toMatchObject(a));
-  test('trusy error', () => expect(f(42, 'error')).toMatchObject(a));
-
-  test('good warn', () => expect(f(true, 'warn')).toMatchObject(a));
-  test('good error', () => expect(f(true, 'error')).toMatchObject(a));
-});
-
-describe('match patterns', () => {
-  const badMatchPatterns = [
-    null,
-    ' ',
-    '*',
-    'http://www.google.com',
-    'http://*foo/bar',
-    'http://foo.*.bar/baz',
-    'http:/bar',
-    'foo://*',
-  ];
-
-  for (const [i, bad] of Object.entries(badMatchPatterns)) {
-    test(`bad match pattern #${i}`, () => expect(isMatchPattern(bad)).toBe(false));
-  }
-
-  const goodMatchPatterns = [
-    'http://*/*',
-    'http://*/foo*',
-    'https://*.google.com/foo*bar',
-    'http://example.org/foo/bar.html',
-    'file:///foo*',
-    '*://mail.google.com/*',
-  ];
-
-  for (const [i, good] of Object.entries(goodMatchPatterns)) {
-    test(`good match pattern #${i}`, () => expect(isMatchPattern(good)).toBe(true));
-  }
-});
-
-describe('glob uris', () => {
-  const badGlobURIs = [null, ' '];
-
-  for (const [i, bad] of Object.entries(badGlobURIs)) {
-    test(`bad glob uri #${i}`, () => expect(isGlobURI(bad)).toBe(false));
-  }
-
-  const goodGlobURIs = [
-    '*',
-    'http://www.google.com',
-    'http://*foo/bar',
-    'http://foo.*.bar/baz',
-    'http:/bar',
-    'foo://*',
-    'http://*/*',
-    'http://*/foo*',
-    'https://*.google.com/foo*bar',
-    'http://example.org/foo/bar.html',
-    'file:///foo*',
-    '*://mail.google.com/*',
-  ];
-
-  for (const [i, good] of Object.entries(goodGlobURIs)) {
-    test(`good glob uri #${i}`, () => expect(isGlobURI(good)).toBe(true));
-  }
-});
-
-describe('sandbox', () => {
-  const f = _binary_enum('sandbox', SANDBOX_ENUM);
-  const a = (v) => answerWrap('sandbox', v);
-
-  test('null warn', () => expect(f(null, 'warn')).toMatchObject(a(SANDBOX_ENUM[0])));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
-
-  test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
-  test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
-
-  test('valid enum warn', () => expect(f('raw', 'warn')).toMatchObject(a('raw')));
-  test('valid enum error', () => expect(f('raw', 'error')).toMatchObject(a('raw')));
-
-  test('invalid enum warn', () => expect(f('hello', 'warn')).toMatchObject(a(SANDBOX_ENUM[0])));
-  test('invalid enum error', () => expect(() => f('hello', 'error')).toThrow(InvalidMetaValue));
-});
-
-describe('antifeature', () => {
-  const f = _binary_strings('antifeature', {
-    message: (keyName) => `${keyName}'s metaValue should be one of [${ANTIFEATURE_ENUM.join(', ')}]`,
-    apply: (v) => ANTIFEATURE_ENUM.includes(v),
+  test('returns null for a missing value in warn mode', () => {
+    expect(parseResource(null, 'warn')).toBeNull();
   });
-  const a = (v) => answerWrap('antifeature', v);
 
-  test('null warn', () => expect(f(null, 'warn')).toBe(null));
-  test('null error', () => expect(() => f(null, 'error')).toThrow(InvalidMetaValue));
+  test('throws for a missing value in error mode', () => {
+    expect(() => parseResource(null, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  test('undefined warn', () => expect(f(undefined, 'warn')).toBe(null));
-  test('undefined error', () => expect(() => f(undefined, 'error')).toThrow(InvalidMetaValue));
+  test('returns null for a non-object value in warn mode', () => {
+    expect(parseResource('bad-type', 'warn')).toBeNull();
+  });
 
-  test('valid enum warn', () => expect(f('ads', 'warn')).toMatchObject(a('ads')));
-  test('valid enum error', () => expect(f('ads', 'error')).toMatchObject(a('ads')));
+  test('throws for a non-object value in error mode', () => {
+    expect(() => parseResource('bad-type', 'error')).toThrow(InvalidMetaValue);
+  });
 
-  test('valid enums warn', () => expect(f(['ads', 'miner'], 'warn')).toMatchObject(a(['ads', 'miner'])));
-  test('valid enums error', () => expect(f(['ads', 'miner'], 'error')).toMatchObject(a(['ads', 'miner'])));
+  test('stringifies an invalid resource value in warn mode', () => {
+    expect(parseResource({ unknown: 42 }, 'warn'))
+      .toEqual([['resource', 'unknown', '42']]);
+  });
 
-  test('invalid enum warn', () => expect(f('virus', 'warn')).toMatchObject(a('virus')));
-  test('invalid enum error', () => expect(() => f('virus', 'error')).toThrow(InvalidMetaValue));
+  test('throws for an invalid resource value in error mode', () => {
+    expect(() => parseResource({ unknown: 42 }, 'error')).toThrow(InvalidMetaValue);
+  });
 
-  test('invalid enums warn', () => expect(f(['ads', 'virus'], 'warn')).toMatchObject(a(['ads', 'virus'])));
-  test('invalid enums error', () => expect(() => f(['ads', 'virus'], 'error')).toThrow(InvalidMetaValue));
+  test.each(['warn', 'error'])('accepts an empty object in %s mode', (validator) => {
+    expect(parseResource({}, validator)).toEqual([]);
+  });
+
+  test.each(['warn', 'error'])('accepts valid resources in %s mode', (validator) => {
+    expect(parseResource(resources, validator)).toEqual(expectedResources);
+  });
+});
+
+describe('version metadata', () => {
+  const parseVersion = _binary_version('version');
+
+  test('returns null for a missing version in warn mode', () => {
+    expect(parseVersion(null, 'warn')).toBeNull();
+  });
+
+  test('throws for a missing version in error mode', () => {
+    expect(() => parseVersion(null, 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test('coerces a partial version in warn mode', () => {
+    expect(parseVersion('1', 'warn')).toEqual(entriesFor('version', '1.0.0'));
+  });
+
+  test('throws for a partial version in error mode', () => {
+    expect(() => parseVersion('1', 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test('returns null for an invalid version in warn mode', () => {
+    expect(parseVersion('hello.world', 'warn')).toBeNull();
+  });
+
+  test('throws for an invalid version in error mode', () => {
+    expect(() => parseVersion('hello.world', 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test.each(['warn', 'error'])('accepts a valid version in %s mode', (validator) => {
+    expect(parseVersion('1.2.3', validator))
+      .toEqual(entriesFor('version', '1.2.3'));
+  });
+});
+
+describe.each(['noframes', 'unwrap'])('%s unary metadata', (key) => {
+  const parseUnary = _unary(key);
+  const expected = [[key]];
+
+  test('returns null for a falsy value in warn mode', () => {
+    expect(parseUnary(null, 'warn')).toBeNull();
+  });
+
+  test('throws for a falsy value in error mode', () => {
+    expect(() => parseUnary(null, 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test.each([
+    { name: 'boolean true', value: true },
+    { name: 'a non-boolean truthy value', value: 42 },
+  ])('accepts $name', ({ value }) => {
+    expect(parseUnary(value, 'error')).toEqual(expected);
+  });
+});
+
+describe('match-pattern validation', () => {
+  test.each([
+    { name: 'null', value: null },
+    { name: 'blank text', value: ' ' },
+    { name: 'a bare wildcard', value: '*' },
+    { name: 'a URL without a path', value: 'http://www.google.com' },
+    { name: 'a wildcard in the hostname prefix', value: 'http://*foo/bar' },
+    { name: 'a wildcard inside the hostname', value: 'http://foo.*.bar/baz' },
+    { name: 'a malformed URL', value: 'http:/bar' },
+    { name: 'an unsupported scheme', value: 'foo://*' },
+  ])('rejects $name', ({ value }) => {
+    expect(isMatchPattern(value)).toBe(false);
+  });
+
+  test.each([
+    'http://*/*',
+    'http://*/foo*',
+    'https://*.google.com/foo*bar',
+    'http://example.org/foo/bar.html',
+    'file:///foo*',
+    '*://mail.google.com/*',
+  ])('accepts %s', (value) => {
+    expect(isMatchPattern(value)).toBe(true);
+  });
+});
+
+describe('glob-URI validation', () => {
+  test.each([
+    { name: 'null', value: null },
+    { name: 'blank text', value: ' ' },
+  ])('rejects $name', ({ value }) => {
+    expect(isGlobURI(value)).toBe(false);
+  });
+
+  test.each([
+    '*',
+    'http://www.google.com',
+    'http://*foo/bar',
+    'http://foo.*.bar/baz',
+    'http:/bar',
+    'foo://*',
+    'http://*/*',
+    'http://*/foo*',
+    'https://*.google.com/foo*bar',
+    'http://example.org/foo/bar.html',
+    'file:///foo*',
+    '*://mail.google.com/*',
+  ])('accepts %s', (value) => {
+    expect(isGlobURI(value)).toBe(true);
+  });
+});
+
+describe('antifeature metadata', () => {
+  const parseAntifeature = _binary_strings('antifeature', {
+    message: (key) => `${key}'s metaValue should be one of [${ANTIFEATURE_ENUM.join(', ')}]`,
+    apply: (value) => ANTIFEATURE_ENUM.includes(value),
+  });
+
+  test.each([
+    { name: 'null', value: null },
+    { name: 'undefined', value: undefined },
+  ])('returns null for $name in warn mode', ({ value }) => {
+    expect(parseAntifeature(value, 'warn')).toBeNull();
+  });
+
+  test.each([
+    { name: 'null', value: null },
+    { name: 'undefined', value: undefined },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseAntifeature(value, 'error')).toThrow(InvalidMetaValue);
+  });
+
+  test.each([
+    { name: 'one valid value', value: 'ads' },
+    { name: 'multiple valid values', value: ['ads', 'miner'] },
+  ])('accepts $name', ({ value }) => {
+    expect(parseAntifeature(value, 'error')).toEqual(entriesFor('antifeature', value));
+  });
+
+  test.each([
+    { name: 'one invalid value', value: 'virus' },
+    { name: 'a mixture of valid and invalid values', value: ['ads', 'virus'] },
+  ])('retains $name in warn mode', ({ value }) => {
+    expect(parseAntifeature(value, 'warn')).toEqual(entriesFor('antifeature', value));
+  });
+
+  test.each([
+    { name: 'one invalid value', value: 'virus' },
+    { name: 'a mixture of valid and invalid values', value: ['ads', 'virus'] },
+  ])('throws for $name in error mode', ({ value }) => {
+    expect(() => parseAntifeature(value, 'error')).toThrow(InvalidMetaValue);
+  });
 });

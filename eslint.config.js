@@ -6,7 +6,7 @@ export default [
     ignores: [
       'dist/**',
       'examples/**/out.user.js',
-      'test/options/file/bads/**',
+      'test/options/file/invalid/**',
     ],
   },
   ...flandre.preset,
