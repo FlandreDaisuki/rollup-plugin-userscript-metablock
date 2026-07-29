@@ -1,0 +1,37 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        # aka actions/checkout@v7.0.1
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+        # aka pnpm/action-setup@v6.0.9
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        # aka actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Set package version from tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: pnpm version "${RELEASE_TAG#v}" --no-git-tag-version
+
+      - run: npm publish
