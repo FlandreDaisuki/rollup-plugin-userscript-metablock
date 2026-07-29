@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import debug from 'debug';
-import YAML from 'js-yaml';
+import { load as loadYAML } from 'js-yaml';
 import { jsonClone } from './utils.js';
 import { isValidMetaKeyName, DEFAULT_META } from './meta.js';
 import { FileNotFound, UnsupportedFormat, UnknownScriptManager } from './errors.js';
@@ -59,7 +59,7 @@ export const loadFile = async(filename = './metablock.json') => {
 
     case '.yml':
     case '.yaml': {
-      Object.assign(keys, SIMPLEST_META, YAML.load(await fs.readFile(filename), { filename }));
+      Object.assign(keys, SIMPLEST_META, loadYAML(await fs.readFile(filename), { filename }));
       break;
     }
 

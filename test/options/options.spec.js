@@ -18,32 +18,32 @@ describe('options:file', () => {
     namespace: 'npmjs.com/rollup-plugin-userscript-metablock',
   });
 
-  test('null/empty', () => {
-    expect(loadFile(null)).resolves.toMatchObject(SIMPLEST_META);
-    expect(loadFile('')).resolves.toMatchObject(SIMPLEST_META);
+  test('null/empty', async() => {
+    await expect(loadFile(null)).resolves.toMatchObject(SIMPLEST_META);
+    await expect(loadFile('')).resolves.toMatchObject(SIMPLEST_META);
   });
-  test('not exists', () => {
-    expect(() => loadFile('not_exist.json')).rejects.toThrow(FileNotFound);
-  });
-
-  test('unsupported format', () => {
-    expect(() => loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.ini'))).rejects.toThrow(UnsupportedFormat);
+  test('not exists', async() => {
+    await expect(loadFile('not_exist.json')).rejects.toThrow(FileNotFound);
   });
 
-  test('json', () => {
-    expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.json'))).resolves.toMatchObject(ref);
-    expect(() => loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.json'))).rejects.toThrow(Error);
+  test('unsupported format', async() => {
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.ini'))).rejects.toThrow(UnsupportedFormat);
   });
 
-  test('js', () => {
-    expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.js'))).resolves.toMatchObject(ref);
-    expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.esm.js'))).resolves.toMatchObject(ref);
-    expect(() => loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.js'))).rejects.toThrow(Error);
+  test('json', async() => {
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.json'))).resolves.toMatchObject(ref);
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.json'))).rejects.toThrow(Error);
   });
 
-  test('yaml', () => {
-    expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.yaml'))).resolves.toMatchObject(ref);
-    expect(() => loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.yaml'))).rejects.toThrow(YAMLException);
+  test('js', async() => {
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.js'))).resolves.toMatchObject(ref);
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.esm.js'))).resolves.toMatchObject(ref);
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.js'))).rejects.toThrow(Error);
+  });
+
+  test('yaml', async() => {
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/goods/meta.yaml'))).resolves.toMatchObject(ref);
+    await expect(loadFile(path.resolve(import.meta.dirname, 'file/bads/meta.yaml'))).rejects.toThrow(YAMLException);
   });
 });
 
