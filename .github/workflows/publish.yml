@@ -40,11 +40,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: read
+      pull-requests: read
 
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        # aka actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1
+        # aka requarks/changelog-action@v1.10.3
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          excludeTypes: other
+          writeToFile: false
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" --verify-tag --generate-notes
+          RELEASE_NOTES: ${{ steps.changelog.outputs.changes }}
+        run: gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" --notes "$RELEASE_NOTES"
