@@ -116,6 +116,7 @@ export default async function metablock(options = {}) {
   debug('plugin:top::final')(final);
 
   return {
+    name: 'userscript-metablock',
     renderChunk(code, renderedChunk, outputOptions) {
       const magicString = new MagicString(code);
       magicString.prepend(`${final}\n\n`).trimEnd('\\n');

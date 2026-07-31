@@ -1,0 +1,12 @@
+{
+  "name": "rollup-plugin-userscript-metablock-examples-rolldown",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rolldown -c"
+  },
+  "devDependencies": {
+    "rolldown": "^1.2.1",
+    "rollup-plugin-userscript-metablock": "^0.4.2"
+  }
+}

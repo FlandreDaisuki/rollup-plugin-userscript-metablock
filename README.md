@@ -60,6 +60,10 @@ export default {
 
 You can find the options detail [here](./docs/options.md), and meta details [here](./docs/meta.md).
 
+### Rolldown
+
+This plugin also works with Rolldown. See the complete [Rolldown example](./examples/Rolldown).
+
 ### Other
 
 1. If no grant, use `@grant none` explicitly
