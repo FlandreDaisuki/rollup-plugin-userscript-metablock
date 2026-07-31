@@ -36,8 +36,7 @@ common
 
 ```js
 import metablock from 'rollup-plugin-userscript-metablock';
-
-const pkg = require('package.json');
+import pkg from './package.json' with { type: 'json' };
 
 export default {
   input: 'main.js',
