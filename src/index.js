@@ -4,6 +4,8 @@ import { loadFile, getScriptManager, getValidator, getValidOrder, sortbyOrder } 
 import { isValidMetaKeyName, getMetaEntry } from './meta.js';
 import { jsonClone, isObject } from './utils.js';
 
+export const defineMetadata = (metadata) => metadata;
+
 const parseOptions = async (options) => {
   debug('plugin:parseOptions::raw options')(options);
 

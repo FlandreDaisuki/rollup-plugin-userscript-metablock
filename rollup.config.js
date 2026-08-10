@@ -2,10 +2,8 @@ import terser from '@rollup/plugin-terser';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
-const input = 'src/index.js';
-
 export default [{
-  input,
+  input: 'src/cjs.js',
   plugins: [
     nodeResolve({
       // REF: https://stackoverflow.com/a/77847468
@@ -20,7 +18,7 @@ export default [{
     exports: 'default',
   }],
 }, {
-  input,
+  input: 'src/index.js',
   plugins: [
     nodeResolve({
       exportConditions: ['node'],

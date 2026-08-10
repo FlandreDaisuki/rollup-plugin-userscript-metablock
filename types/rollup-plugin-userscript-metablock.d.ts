@@ -9,6 +9,7 @@ declare module 'rollup-plugin-userscript-metablock' {
      * https://developer.chrome.com/docs/extensions/mv3/match_patterns/
      */
     'match'?: string | string[];
+    'exclude-match'?: string | string[];
     'include'?: string | string[];
     'exclude'?: string | string[];
     'icon'?: string;
@@ -60,6 +61,8 @@ declare module 'rollup-plugin-userscript-metablock' {
     'connect'?: string | string[];
     'nocompat'?: boolean;
     'sandbox'?: 'raw' | 'JavaScript' | 'DOM';
+    'inject-into'?: string;
+    'unwrap'?: true;
   }
 
   export interface Options {
@@ -80,6 +83,8 @@ declare module 'rollup-plugin-userscript-metablock' {
     override?: MetaValues;
     validator?: 'off' | 'warn' | 'error';
   }
+
+  export function defineMetadata(metadata: MetaValues): MetaValues;
 
   function metablock(options?: Options): any;
 
