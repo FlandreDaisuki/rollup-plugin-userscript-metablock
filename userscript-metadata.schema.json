@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cdn.jsdelivr.net/npm/rollup-plugin-userscript-metablock@latest/userscript-metadata.schema.json",
+  "title": "rollup-plugin-userscript-metablock metadata",
+  "description": "A userscript metadata object loaded through the plugin's `file` option. Metadata keys are top-level properties without the leading `@`.",
+  "type": "object",
+  "definitions": {
+    "stringList": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "multilingualString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "default": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {
+            "type": "string"
+          },
+          "required": [
+            "default"
+          ]
+        }
+      ]
+    },
+    "enabledFlag": {
+      "type": "boolean",
+      "const": true
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "A JSON Schema URL used by editors. The plugin ignores this property while rendering metadata."
+    },
+    "name": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/multilingualString"
+        }
+      ],
+      "description": "The script name. An object maps language tags to translations and must contain `default`.",
+      "default": "New Script"
+    },
+    "description": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string",
+      "default": "npmjs.com/rollup-plugin-userscript-metablock"
+    },
+    "match": {
+      "$ref": "#/definitions/stringList"
+    },
+    "include": {
+      "$ref": "#/definitions/stringList"
+    },
+    "exclude": {
+      "$ref": "#/definitions/stringList"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "require": {
+      "type": "string"
+    },
+    "run-at": {
+      "type": "string",
+      "enum": [
+        "document-end",
+        "document-start",
+        "document-idle",
+        "document-body",
+        "context-menu"
+      ],
+      "default": "document-end"
+    },
+    "resource": {
+      "type": "object",
+      "description": "A map from resource names to resource URIs. The plugin renders each entry as `@resource <name> <URI>`.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "version": {
+      "type": "string"
+    },
+    "noframes": {
+      "$ref": "#/definitions/enabledFlag"
+    },
+    "grant": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/stringList"
+        }
+      ],
+      "default": "none"
+    },
+    "antifeature": {
+      "$ref": "#/definitions/stringList"
+    },
+    "updateURL": {
+      "type": "string"
+    },
+    "installURL": {
+      "type": "string"
+    },
+    "downloadURL": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "supportURL": {
+      "type": "string"
+    },
+    "contributionURL": {
+      "type": "string"
+    },
+    "contributionAmount": {
+      "type": "string"
+    },
+    "compatible": {
+      "type": "string"
+    },
+    "incompatible": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "homepage": {
+      "type": "string"
+    },
+    "homepageURL": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "defaulticon": {
+      "type": "string"
+    },
+    "icon64": {
+      "type": "string"
+    },
+    "iconURL": {
+      "type": "string"
+    },
+    "icon64URL": {
+      "type": "string"
+    },
+    "connect": {
+      "$ref": "#/definitions/stringList"
+    },
+    "nocompat": {
+      "type": "boolean"
+    },
+    "sandbox": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "JavaScript",
+        "DOM"
+      ]
+    },
+    "unwrap": {
+      "$ref": "#/definitions/enabledFlag"
+    },
+    "exclude-match": {
+      "$ref": "#/definitions/stringList"
+    },
+    "inject-into": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

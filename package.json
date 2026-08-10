@@ -24,7 +24,8 @@
   "types": "types/rollup-plugin-userscript-metablock.d.ts",
   "files": [
     "dist/",
-    "types/"
+    "types/",
+    "userscript-metadata.schema.json"
   ],
   "scripts": {
     "lint": "eslint .",
@@ -49,6 +50,7 @@
     "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
     "@types/semver": "^7.5.8",
+    "ajv": "^8.17.1",
     "eslint": "^10.8.0",
     "rollup": "^4.17.2",
     "vite": "^8.1.5",

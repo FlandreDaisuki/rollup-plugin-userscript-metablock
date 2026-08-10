@@ -60,6 +60,45 @@ export default {
 
 You can find the options detail [here](./docs/options.md), and meta details [here](./docs/meta.md).
 
+### JSON Schema
+
+JSON metadata files can reference the schema shipped with this package for editor completion and validation. The file itself is the metadata object, so its top-level properties are metakeys without the leading `@`:
+
+```json
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/rollup-plugin-userscript-metablock@latest/userscript-metadata.schema.json",
+  "name": "My userscript",
+  "match": "https://example.com/*",
+  "grant": "none"
+}
+```
+
+The same schema is also available from [UNPKG](https://unpkg.com/rollup-plugin-userscript-metablock/userscript-metadata.schema.json). The plugin ignores the `$schema` property when it renders the metablock.
+
+### JavaScript metadata files
+
+The `file` option also accepts `.js`, `.mjs`, and `.cjs` modules. Use `defineMetadata` to get IDE auto-completion:
+
+```js
+// metablock.mjs
+import { defineMetadata } from 'rollup-plugin-userscript-metablock';
+
+export default defineMetadata({
+  name: 'My userscript',
+  grant: 'none',
+});
+```
+
+```js
+// metablock.cjs
+const { defineMetadata } = require('rollup-plugin-userscript-metablock');
+
+module.exports = defineMetadata({
+  name: 'My userscript',
+  grant: 'none',
+});
+```
+
 ### Rolldown
 
 This plugin also works with Rolldown. See the complete [Rolldown example](./examples/Rolldown).
