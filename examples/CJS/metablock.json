@@ -1,4 +1,5 @@
 {
+  "$schema": "https://cdn.jsdelivr.net/npm/rollup-plugin-userscript-metablock@0.7.0/userscript-metadata.schema.json",
   "name": "Hello, world",
   "namespace": "https://www.example.com/",
   "version": "1.0",

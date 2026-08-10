@@ -4,3 +4,4 @@ dist/
 *.tgz
 
 examples/**/pnpm-lock.yaml
+examples/**/pnpm-workspace.yaml
